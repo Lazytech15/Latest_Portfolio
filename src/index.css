@@ -1,0 +1,346 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --accent: #00E5A0;
+  --bg: #0a0a0a;
+  --white: #f5f3ee;
+  --muted: #666;
+  --border: rgba(255,255,255,0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
+
+/* ─── Custom Cursor ─── */
+.cursor-blob {
+  width: 40px;
+  height: 40px;
+  background: var(--accent);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 10000;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: difference;
+  will-change: left, top, width, height;
+  transition: width 0.3s cubic-bezier(0.16,1,0.3,1),
+              height 0.3s cubic-bezier(0.16,1,0.3,1),
+              background 0.3s ease;
+}
+.cursor-blob.hovering {
+  width: 72px;
+  height: 72px;
+}
+.cursor-blob.clicking {
+  width: 24px;
+  height: 24px;
+}
+
+/* ─── Nav ─── */
+.nav-link {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  font-size: 0.9rem;
+  letter-spacing: 0.01em;
+  color: var(--white);
+  text-decoration: none;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+  position: relative;
+}
+.nav-link:hover { opacity: 1; }
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--white);
+  transition: width 0.25s ease;
+}
+.nav-link:hover::after { width: 100%; }
+
+/* ─── Display heading ─── */
+.display-heading {
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 0.02em;
+  line-height: 0.9;
+  color: var(--white);
+}
+
+/* ─── Section transitions (clip-path stacking) ─── */
+.section-white {
+  background: var(--white);
+  color: #0a0a0a;
+}
+.section-dark {
+  background: var(--bg);
+  color: var(--white);
+}
+
+/* curved clip top */
+.clip-curve-top {
+  clip-path: ellipse(120% 100% at 50% 100%);
+}
+/* or: rounded top border */
+.rounded-top-section {
+  border-radius: 32px 32px 0 0;
+}
+
+/* ─── Project list rows ─── */
+.project-row {
+  border-bottom: 1px solid rgba(0,0,0,0.12);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 1.5rem 0;
+  cursor: pointer;
+  transition: padding-left 0.35s cubic-bezier(0.16,1,0.3,1);
+  position: relative;
+  overflow: hidden;
+}
+.project-row:first-child { border-top: 1px solid rgba(0,0,0,0.12); }
+.project-row:hover { padding-left: 1.5rem; }
+
+.project-row-title {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  font-size: clamp(1.8rem, 4vw, 3.5rem);
+  line-height: 1.1;
+  color: #0a0a0a;
+  transition: color 0.2s ease;
+}
+.project-row:hover .project-row-title { color: #0a0a0a; }
+
+.project-row-arrow {
+  font-size: 1.2rem;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.project-row:hover .project-row-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Dark project rows (for skills/projects section on dark bg) */
+.project-row-dark {
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.project-row-dark:first-child { border-top: 1px solid rgba(255,255,255,0.08); }
+.project-row-dark .project-row-title { color: var(--white); }
+
+/* ─── Marquee ─── */
+@keyframes marqueeX {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.marquee-inner {
+  display: flex;
+  white-space: nowrap;
+  animation: marqueeX 30s linear infinite;
+}
+
+/* ─── Fade-up reveal ─── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(36px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1),
+              transform 0.9s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* stagger delays */
+.reveal-d1 { transition-delay: 0.05s; }
+.reveal-d2 { transition-delay: 0.12s; }
+.reveal-d3 { transition-delay: 0.2s; }
+.reveal-d4 { transition-delay: 0.3s; }
+.reveal-d5 { transition-delay: 0.4s; }
+
+/* ─── Text clip reveal (words slide up) ─── */
+.word-reveal-wrap {
+  overflow: hidden;
+  display: inline-block;
+}
+.word-reveal-inner {
+  display: inline-block;
+  transform: translateY(100%);
+  transition: transform 0.8s cubic-bezier(0.16,1,0.3,1);
+}
+.word-reveal-inner.visible {
+  transform: translateY(0);
+}
+
+/* ─── Blink ─── */
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.blink { animation: blink 1s step-end infinite; }
+
+/* ─── Modal ─── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.modal-panel {
+  background: #111;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 2.5rem 3rem;
+  max-width: 600px;
+  width: 92%;
+  max-height: 80vh;
+  overflow-y: auto;
+  transform: translateY(24px) scale(0.98);
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+  scrollbar-width: thin;
+}
+.modal-overlay.open .modal-panel {
+  transform: translateY(0) scale(1);
+}
+
+/* ─── Skill bar ─── */
+.bar-track {
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+  position: relative;
+  overflow: hidden;
+}
+.bar-fill {
+  position: absolute;
+  inset-y: 0;
+  left: 0;
+  width: 0;
+  background: var(--white);
+  transition: width 1.4s cubic-bezier(0.16,1,0.3,1);
+}
+
+/* ─── Page transition wipe ─── */
+.page-wipe {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 8000;
+  transform: scaleY(1);
+  transform-origin: top;
+  transition: transform 0.6s cubic-bezier(0.7,0,0.3,1);
+  pointer-events: none;
+}
+.page-wipe.wiped {
+  transform: scaleY(0);
+  transform-origin: bottom;
+}
+
+/* ─── Contact form ─── */
+.field-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  padding: 1rem 0;
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 300;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+.field-input::placeholder { color: rgba(255,255,255,0.3); }
+.field-input:focus { border-color: rgba(255,255,255,0.5); }
+
+/* ─── Tag pill ─── */
+.tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  padding: 3px 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 100px;
+  color: rgba(255,255,255,0.5);
+}
+.tag-dark {
+  border-color: rgba(0,0,0,0.15);
+  color: rgba(0,0,0,0.45);
+}
+
+/* ─── Status dot ─── */
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+.status-dot { animation: pulse 2s ease-in-out infinite; }
+
+/* ─── Button ─── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  padding: 12px 28px;
+  border-radius: 100px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn-fill {
+  background: var(--white);
+  color: var(--bg);
+  border: 1px solid transparent;
+}
+.btn-fill:hover { background: var(--accent); }
+.btn-fill-accent {
+  background: var(--accent);
+  color: var(--bg);
+  border: 1px solid transparent;
+}
+.btn-fill-accent:hover { background: #00ffa8; transform: translateY(-1px); }
+.btn-ghost {
+  background: transparent;
+  color: var(--white);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.btn-ghost:hover { border-color: var(--white); }
+.btn-ghost-dark {
+  background: transparent;
+  color: #0a0a0a;
+  border: 1px solid rgba(0,0,0,0.2);
+}
+.btn-ghost-dark:hover { border-color: #0a0a0a; }
