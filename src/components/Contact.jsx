@@ -32,11 +32,11 @@ export default function Contact() {
     <section
       id="contact"
       ref={sectionRef}
-      style={{ background: 'var(--bg)', padding: '7rem 2rem 5rem', position: 'relative', zIndex: 1 }}
+      style={{ background: 'var(--bg)', padding: '7rem 2rem 0', position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
     >
-      <div className="px-6 lg:px-14">
+      <div className="px-6 lg:px-14" style={{ display: "flex", flexDirection: "column", gap: "0" }}>
         {/* Label */}
-        <div className="reveal reveal-d1 flex items-center gap-3 mb-16">
+        <div className="reveal reveal-d1 flex items-center gap-3 mb-16" style={{ flexShrink: 0 }}>
           <span
             style={{
               fontFamily: "'DM Mono', monospace",
@@ -167,6 +167,41 @@ export default function Contact() {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Footer strip */}
+      <div style={{ marginTop: '5rem', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0' }}>
+        {/* Marquee */}
+        <div style={{ overflow: 'hidden', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '1rem 0' }}>
+          <div className="marquee-inner" style={{ gap: '3rem' }}>
+            {Array(8).fill(['REACT', '·', 'VITE', '·', 'ESP32', '·', 'NODE.JS', '·', 'REACT NATIVE', '·', 'ELECTRON', '·', 'N8N', '·', 'MYSQL', '·']).flat().map((t, i) => (
+              <span key={i} style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: '0.7rem',
+                letterSpacing: '0.2em',
+                color: t === '·' ? 'var(--accent)' : 'rgba(255,255,255,0.2)',
+                textTransform: 'uppercase',
+                padding: '0 0.5rem',
+              }}>{t}</span>
+            ))}
+          </div>
+        </div>
+        {/* Bottom row */}
+        <div className="px-6 lg:px-14 flex flex-col sm:flex-row items-center justify-between gap-4 py-6">
+          <div className="flex items-center gap-2">
+            <div style={{ width: 28, height: 28, border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>ESA</span>
+            </div>
+            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>dev.portfolio</span>
+          </div>
+          <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.72rem', color: 'rgba(255,255,255,0.2)', letterSpacing: '0.06em' }}>
+            {new Date().getFullYear()} © Built with React · Vite · TailwindCSS
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'DM Mono', monospace", fontSize: '0.72rem', color: 'rgba(255,255,255,0.25)' }}>
+            <span className="status-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block' }} />
+            All systems operational
           </div>
         </div>
       </div>

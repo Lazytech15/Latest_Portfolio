@@ -344,3 +344,19 @@ body {
   border: 1px solid rgba(0,0,0,0.2);
 }
 .btn-ghost-dark:hover { border-color: #0a0a0a; }
+/* ─── Loading screen ─── */
+@keyframes loadBar {
+  from { transform: scaleX(0); transform-origin: left; }
+  to   { transform: scaleX(1); transform-origin: left; }
+}
+
+/* ─── Back to top ─── */
+/* Styles are inline in the component for dynamic hover state;
+   this handles the global cursor override */
+button[aria-label="Back to top"] {
+  cursor: none;
+}
+
+/* ─── Scroll-retrigger: reset reveal on scroll-out ─── */
+/* The JS observer removes .visible on exit, CSS transition handles re-entry */
+/* No extra CSS needed — existing .reveal / .reveal.visible handles it */
