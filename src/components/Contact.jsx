@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import logo_nobackground from '../../public/ed_logo_noBackground.png'
 
 export default function Contact() {
   const sectionRef = useRef(null)
@@ -32,9 +33,9 @@ export default function Contact() {
     <section
       id="contact"
       ref={sectionRef}
-      style={{ background: 'var(--bg)', padding: '7rem 2rem 0', position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
+      style={{ background: 'var(--bg)', padding: 'clamp(3.5rem,7vw,7rem) 0 0', position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
     >
-      <div className="px-6 lg:px-14" style={{ display: "flex", flexDirection: "column", gap: "0" }}>
+      <div style={{ padding: '0 clamp(1.25rem, 4vw, 3.5rem)', display: 'flex', flexDirection: 'column', gap: '0' }}>
         {/* Label */}
         <div className="reveal reveal-d1 flex items-center gap-3 mb-16" style={{ flexShrink: 0 }}>
           <span
@@ -51,14 +52,14 @@ export default function Contact() {
           <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_1.1fr] gap-20 items-start">
+        <div className="grid lg:grid-cols-[1fr_1.1fr] gap-12 lg:gap-20 items-start">
           {/* Left */}
           <div>
             <h2
               className="reveal reveal-d2"
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: 'clamp(3.5rem, 8vw, 7rem)',
+                fontSize: 'clamp(2.8rem, 8vw, 7rem)',
                 lineHeight: 0.9,
                 color: 'var(--white)',
                 letterSpacing: '0.01em',
@@ -74,18 +75,18 @@ export default function Contact() {
                 { label: 'Location', value: 'Philippines · Remote-Ready' },
                 { label: 'Response', value: 'Usually within 24 hours' },
               ].map((item) => (
-                <div key={item.label} style={{ display: 'flex', gap: '1.5rem', padding: '0.75rem 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                  <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.7rem', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', minWidth: 90 }}>
+                <div key={item.label} style={{ display: 'flex', gap: '1rem', padding: '0.75rem 0', borderBottom: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap' }}>
+                  <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.7rem', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', minWidth: 80 }}>
                     {item.label}
                   </span>
-                  <span style={{ fontWeight: 300, fontSize: '0.95rem', color: 'rgba(255,255,255,0.65)' }}>
+                  <span style={{ fontWeight: 300, fontSize: '0.92rem', color: 'rgba(255,255,255,0.65)' }}>
                     {item.value}
                   </span>
                 </div>
               ))}
             </div>
 
-            <div className="reveal reveal-d4 flex gap-3">
+            <div className="reveal reveal-d4 flex gap-3 flex-wrap">
               {[
                 { name: 'GitHub', url: 'https://github.com' },
                 { name: 'LinkedIn', url: 'https://linkedin.com' },
@@ -101,7 +102,7 @@ export default function Contact() {
           {/* Right — form */}
           <div className="reveal reveal-d3">
             {submitted ? (
-              <div style={{ padding: '4rem 2rem', textAlign: 'center', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8 }}>
+              <div style={{ padding: 'clamp(2rem,5vw,4rem) 2rem', textAlign: 'center', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8 }}>
                 <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '4rem', color: 'var(--accent)', lineHeight: 1 }}>✓</div>
                 <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '2.5rem', color: 'var(--white)', marginTop: '1rem' }}>Message Sent!</h3>
                 <p style={{ fontWeight: 300, color: 'rgba(255,255,255,0.4)', marginTop: '0.5rem' }}>I'll get back to you soon.</p>
@@ -109,7 +110,7 @@ export default function Contact() {
                   data-hover
                   onClick={() => setSubmitted(false)}
                   className="btn btn-ghost"
-                  style={{ marginTop: '1.5rem', cursor: 'none' }}
+                  style={{ marginTop: '1.5rem' }}
                 >
                   Send Another
                 </button>
@@ -157,7 +158,7 @@ export default function Contact() {
                   data-hover
                   onClick={handleSubmit}
                   className="btn btn-fill-accent"
-                  style={{ alignSelf: 'flex-start', cursor: 'none', fontSize: '0.9rem' }}
+                  style={{ alignSelf: 'flex-start', fontSize: '0.9rem' }}
                 >
                   Send Message
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -172,7 +173,7 @@ export default function Contact() {
       </div>
 
       {/* Footer strip */}
-      <div style={{ marginTop: '5rem', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0' }}>
+      <div style={{ marginTop: '4rem', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0' }}>
         {/* Marquee */}
         <div style={{ overflow: 'hidden', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '1rem 0' }}>
           <div className="marquee-inner" style={{ gap: '3rem' }}>
@@ -188,19 +189,36 @@ export default function Contact() {
             ))}
           </div>
         </div>
-        {/* Bottom row */}
-        <div className="px-6 lg:px-14 flex flex-col sm:flex-row items-center justify-between gap-4 py-6">
-          <div className="flex items-center gap-2">
-            <div style={{ width: 28, height: 28, border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>ESA</span>
+
+        {/* ↓ FIXED: Bottom row — full width, space-between on all screen sizes */}
+        <div
+          style={{
+            padding: '1.25rem clamp(1.25rem, 4vw, 3.5rem)',
+            display: 'flex',
+            flexDirection: 'row',         // always row, never column
+            alignItems: 'center',
+            justifyContent: 'space-between', // spread items across full width
+            gap: '1rem',
+            flexWrap: 'wrap',             // wraps gracefully on very small screens
+            width: '100%',
+          }}
+        >
+          {/* Logo + name */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 28, height: 28, border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+              <img src={logo_nobackground} alt="Logo" style={{ height: '1rem' }} />
             </div>
-            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>dev.portfolio</span>
+            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>EABLAO.DEV</span>
           </div>
-          <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.72rem', color: 'rgba(255,255,255,0.2)', letterSpacing: '0.06em' }}>
-            {new Date().getFullYear()} © Built with React · Vite · TailwindCSS
+
+          {/* Copyright */}
+          <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.72rem', color: 'rgba(255,255,255,0.2)', letterSpacing: '0.06em', margin: 0 }}>
+            {new Date().getFullYear()} © All rights reserved
           </p>
+
+          {/* Status */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'DM Mono', monospace", fontSize: '0.72rem', color: 'rgba(255,255,255,0.25)' }}>
-            <span className="status-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block' }} />
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block' }} />
             All systems operational
           </div>
         </div>

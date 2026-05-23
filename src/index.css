@@ -4,7 +4,8 @@
 @tailwind utilities;
 
 :root {
-  --accent: #00E5A0;
+  /* --accent: #C4FF0E; */
+  --accent: #ffffff;
   --bg: #0a0a0a;
   --white: #f5f3ee;
   --muted: #666;

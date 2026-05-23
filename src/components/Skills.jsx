@@ -85,11 +85,10 @@ function SkillRow({ group, isOpen, onToggle, triggerBars }) {
           width: '100%',
           background: 'none',
           border: 'none',
-          cursor: 'none',
           display: 'grid',
           gridTemplateColumns: '1fr auto',
           alignItems: 'center',
-          padding: '1.5rem 0',
+          padding: '1.25rem 0',
           textAlign: 'left',
         }}
       >
@@ -98,7 +97,7 @@ function SkillRow({ group, isOpen, onToggle, triggerBars }) {
             style={{
               fontFamily: "'DM Sans', sans-serif",
               fontWeight: 300,
-              fontSize: 'clamp(1.4rem, 3vw, 2.5rem)',
+              fontSize: 'clamp(1.2rem, 4vw, 2.5rem)',
               color: 'var(--white)',
               letterSpacing: '-0.01em',
             }}
@@ -119,7 +118,6 @@ function SkillRow({ group, isOpen, onToggle, triggerBars }) {
         </span>
       </button>
 
-      {/* Expandable content */}
       <div
         style={{
           maxHeight: isOpen ? '320px' : '0',
@@ -128,10 +126,10 @@ function SkillRow({ group, isOpen, onToggle, triggerBars }) {
         }}
       >
         <div ref={barsRef} style={{ paddingBottom: '2rem' }}>
-          <p style={{ fontWeight: 300, fontSize: '0.95rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+          <p style={{ fontWeight: 300, fontSize: '0.92rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
             {group.detail}
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem 3rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem 2rem' }}>
             {group.skills.map((skill, i) => (
               <div key={i}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
@@ -180,9 +178,9 @@ export default function Skills() {
     <section
       id="skills"
       ref={sectionRef}
-      style={{ background: 'var(--bg)', padding: '7rem 2rem', position: 'relative', zIndex: 1 }}
+      style={{ background: 'var(--bg)', padding: 'clamp(3.5rem,7vw,7rem) 0', position: 'relative', zIndex: 1 }}
     >
-      <div className="px-6 lg:px-14">
+      <div style={{ padding: '0 clamp(1.25rem, 4vw, 3.5rem)' }}>
         {/* Label */}
         <div className="reveal reveal-d1 flex items-center gap-3 mb-16">
           <span
@@ -205,7 +203,7 @@ export default function Skills() {
             <h2
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: 'clamp(3rem, 7vw, 6.5rem)',
+                fontSize: 'clamp(2.8rem, 7vw, 6.5rem)',
                 lineHeight: 0.92,
                 color: 'var(--white)',
                 letterSpacing: '0.01em',
@@ -214,7 +212,7 @@ export default function Skills() {
             >
               Full spectrum developer
             </h2>
-            <p style={{ fontWeight: 300, fontSize: '1rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.7, maxWidth: '380px' }}>
+            <p style={{ fontWeight: 300, fontSize: 'clamp(0.9rem, 2.5vw, 1rem)', color: 'rgba(255,255,255,0.4)', lineHeight: 1.7, maxWidth: '380px' }}>
               From circuit boards to cloud APIs. I thrive at every layer of the stack — and I pick the right tool for the job.
             </p>
             <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.75rem', color: 'rgba(255,255,255,0.2)', marginTop: '2rem', letterSpacing: '0.08em' }}>
