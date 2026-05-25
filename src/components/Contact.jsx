@@ -88,9 +88,9 @@ export default function Contact() {
 
             <div className="reveal reveal-d4 flex gap-3 flex-wrap">
               {[
-                { name: 'GitHub', url: 'https://github.com' },
-                { name: 'LinkedIn', url: 'https://linkedin.com' },
-                { name: 'Email ↗', url: 'mailto:youremail@example.com' },
+                { name: 'GitHub', url: 'https://github.com/Lazytech15' },
+                { name: 'LinkedIn', url: 'https://www.linkedin.com/in/emmanuel-ablao-06713b308' },
+                { name: 'Email ↗', url: 'mailto:emmanuelablao16@gmail.com' },
               ].map((s) => (
                 <a key={s.name} href={s.url} target="_blank" rel="noopener noreferrer" className="btn btn-ghost" style={{ fontSize: '0.8rem', padding: '9px 18px' }}>
                   {s.name}

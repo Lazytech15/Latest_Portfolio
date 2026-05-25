@@ -103,10 +103,10 @@ export default function About() {
             </div>
 
             <div className="reveal reveal-d4 flex gap-4 mt-8 flex-wrap">
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="btn btn-ghost-dark" style={{ fontSize: '0.85rem', padding: '10px 20px' }}>
+              <a href="https://github.com/Lazytech15" target="_blank" rel="noopener noreferrer" className="btn btn-ghost-dark" style={{ fontSize: '0.85rem', padding: '10px 20px' }}>
                 GitHub ↗
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="btn btn-ghost-dark" style={{ fontSize: '0.85rem', padding: '10px 20px' }}>
+              <a href="https://www.linkedin.com/in/emmanuel-ablao-06713b308" target="_blank" rel="noopener noreferrer" className="btn btn-ghost-dark" style={{ fontSize: '0.85rem', padding: '10px 20px' }}>
                 LinkedIn ↗
               </a>
             </div>

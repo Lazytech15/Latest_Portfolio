@@ -30,8 +30,7 @@ const NFCAttendanceSystem = {
   tech: ['ESP32', 'NFC/RFID', 'AES-256', 'SD Card', 'MQTT', 'WebSocket', 'React Vite', 'Node.js', 'MySQL'],
 
   links: {
-    github: 'https://github.com',
-    live: null,
+    github: 'https://github.com/Lazytech15/IOT_ESP32S3WROOM1_JJC_ATTENDANCE'
   },
 }
 

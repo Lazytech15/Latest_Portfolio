@@ -5,15 +5,13 @@ import StockMasterPro from './projects/StockMasterPro'
 import NeuralDesk from './projects/NeuralDesk'
 import QuickTrackMobile from './projects/QuickTrackMobile'
 import AutoFlowEngine from './projects/AutoFlowEngine'
-import AgroSense from './projects/AgroSense'
 
 const projects = [
   NFCAttendanceSystem,
   StockMasterPro,
   NeuralDesk,
   QuickTrackMobile,
-  AutoFlowEngine,
-  AgroSense,
+  AutoFlowEngine
 ]
 
 // ─── Projects section ────────────────────────────────────────────────────────

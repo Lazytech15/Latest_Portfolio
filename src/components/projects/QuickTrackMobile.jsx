@@ -1,35 +1,53 @@
+import quicktrack from '../../../public/project/quicktrack.jpg'
+
 const QuickTrackMobile = {
   number: '004',
   category: 'Mobile',
   title: 'QuickTrack Mobile',
   status: 'Shipped',
-  year: '2024',
+  year: '2026',
   role: 'Mobile Developer',
-  image: null,
+  image: quicktrack,
 
   description:
-    'Cross-platform React Native app for field technicians to log and sync equipment status.',
+    'Offline-first React Native app for field technicians to track, inspect, and report on equipment across iOS and Android.',
 
   overview: [
-    'Built for field technicians who need to work with or without internet. The app allows logging equipment status, capturing photos, recording notes, and generating PDF reports on-device.',
-    'Data syncs to a REST API when connectivity is restored. Push notifications alert technicians to overdue equipment checks.',
-    'The offline-first architecture uses a local SQLite queue that batches sync operations, reducing data loss risk in low-signal environments.',
+    'QuickTrack is built for field technicians who operate in environments with unreliable connectivity. Technicians can register equipment, log inspection results, attach on-site photos, and generate shareable PDF reports — all without an internet connection.',
+    'Every write operation is queued in a local SQLite sync table. When connectivity is restored, the app automatically batches and flushes pending records to a configurable REST API, with per-item retry tracking and sync-status indicators throughout the UI.',
+    'Push notifications are used in two ways: an immediate alert fires whenever overdue equipment is detected on app load, and a daily 8 AM reminder prompts technicians to review their schedule. Equipment is categorized (HVAC, Electrical, Plumbing, Safety, Mechanical) and each item tracks serial number, location, inspection history, and next-check date.',
   ],
 
   highlights: [
-    'Offline-first with local SQLite queue',
-    'Camera integration for on-site photo capture',
-    'On-device PDF report generation',
-    'Push notifications for overdue checks',
-    'Automatic REST API sync on reconnect',
-    'iOS and Android via Expo',
+    'Offline-first SQLite queue with per-record sync tracking and retry logic',
+    'Equipment dashboard with live overdue, active, and pending-sync counts',
+    'Service log system: technician name, inspection status, timestamped notes, and attached photos',
+    'On-device PDF report generation with full service history, exported via native share sheet',
+    'Camera and photo library integration for on-site evidence capture',
+    'Push notifications for overdue checks and configurable daily reminders',
+    'Automatic REST API sync on reconnect with per-item success/failure tracking',
+    'Supports HVAC, Electrical, Plumbing, Safety, and Mechanical equipment categories',
+    'Cross-platform iOS and Android via Expo',
   ],
 
-  tech: ['React Native', 'Expo', 'AsyncStorage', 'SQLite', 'REST API', 'PDF Generation'],
+  tech: [
+    'React Native',
+    'Expo',
+    'expo-sqlite',
+    'expo-router',
+    'expo-notifications',
+    'expo-print',
+    'expo-sharing',
+    'expo-image-picker',
+    'expo-camera',
+    'AsyncStorage',
+    'REST API',
+    'React Navigation',
+    'date-fns',
+  ],
 
   links: {
-    github: 'https://github.com',
-    live: null,
+    github: 'https://github.com/Lazytech15/quicktrack_mobile'
   },
 }
 
