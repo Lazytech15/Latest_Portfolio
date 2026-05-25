@@ -5,7 +5,7 @@ const NFCAttendanceSystem = {
   category: 'IoT + Web',
   title: 'NFC Attendance System',
   status: 'Shipped',
-  year: '2024',
+  year: '2025',
   role: 'Solo Engineer',
   image: nfcScanner,
 
@@ -23,7 +23,7 @@ const NFCAttendanceSystem = {
     'Offline buffering to SD card as JSON',
     'Auto-sync when connectivity is restored',
     'Real-time dashboard via WebSocket',
-    'OLED confirmation display on device',
+    'LCD confirmation display on device',
     'Per-department filtering & CSV export',
   ],
 
