@@ -1,22 +1,116 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useDarkMode } from '../DarkModeContext'
 
 import NFCAttendanceSystem from './projects/NFCAttendanceSystem'
 import StockMasterPro from './projects/StockMasterPro'
 import NeuralDesk from './projects/NeuralDesk'
 import QuickTrackMobile from './projects/QuickTrackMobile'
 import AutoFlowEngine from './projects/AutoFlowEngine'
+import VueSurLaMontagne from './projects/VueSurLaMontagne'
+
+// images
+import vuesurlamontagne from '../../public/project/vuesurlamontagne.png'
+import inventorycontrol from '../../public/project/inventorycontrol.png'
+import quicktrack from '../../public/project/quicktrack.jpg'
+import nfcScanner from '../../public/project/nfcscanner.jpg'
+import eatall from '../../public/project/eatall.png'
+
+// Preview images mapped by project order — swap out as needed
+const projectImages = [
+  nfcScanner,       // 001 NFCAttendanceSystem
+  inventorycontrol, // 002 StockMasterPro
+  eatall,           // 003 NeuralDesk
+  quicktrack,       // 004 QuickTrackMobile
+  eatall,           // 005 AutoFlowEngine
+  vuesurlamontagne, // 006 VueSurLaMontagne
+]
 
 const projects = [
   NFCAttendanceSystem,
   StockMasterPro,
   NeuralDesk,
   QuickTrackMobile,
-  AutoFlowEngine
+  AutoFlowEngine,
+  VueSurLaMontagne
 ]
+
+// ─── Hover Peek Image ────────────────────────────────────────────────────────
+function PeekImage({ src, visible, mouseX, mouseY }) {
+  if (!src) return null
+
+  const offset = { x: 32, y: -80 }
+  const left = mouseX + offset.x
+  const top = mouseY + offset.y
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        left,
+        top,
+        pointerEvents: 'none',
+        zIndex: 9999,
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'scale(1) translateY(0px)' : 'scale(0.92) translateY(8px)',
+        transition: 'opacity 0.22s cubic-bezier(0.22,1,0.36,1), transform 0.22s cubic-bezier(0.22,1,0.36,1)',
+        willChange: 'transform, opacity',
+      }}
+    >
+      <div
+        style={{
+          width: 'clamp(280px, 28vw, 480px)',
+          aspectRatio: '16/10',
+          borderRadius: '6px',
+          overflow: 'hidden',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.25), 0 4px 16px rgba(0,0,0,0.15)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          background: '#111',
+        }}
+      >
+        <img
+          src={src}
+          alt=""
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            display: 'block',
+          }}
+        />
+      </div>
+    </div>
+  )
+}
 
 // ─── Projects section ────────────────────────────────────────────────────────
 export default function Projects({ onOpenProject }) {
   const sectionRef = useRef(null)
+  const { isDark } = useDarkMode()
+  const dmText = isDark ? '#e8e8e8' : '#0a0a0a'
+  const dmTextMuted = isDark ? 'rgba(232,232,232,0.45)' : 'rgba(0,0,0,0.45)'
+  const dmTextSub = isDark ? 'rgba(232,232,232,0.3)' : 'rgba(0,0,0,0.3)'
+  const dmBorder = isDark ? 'rgba(163,230,53,0.12)' : 'rgba(0,0,0,0.07)'
+
+  const [peekSrc, setPeekSrc] = useState(null)
+  const [peekVisible, setPeekVisible] = useState(false)
+  const [mouse, setMouse] = useState({ x: 0, y: 0 })
+
+  const handleRowMouseEnter = (src) => {
+    if (src) {
+      setPeekSrc(src)
+      setPeekVisible(true)
+    }
+  }
+
+  const handleRowMouseLeave = () => {
+    setPeekVisible(false)
+  }
+
+  useEffect(() => {
+    const handleMouseMove = (e) => setMouse({ x: e.clientX, y: e.clientY })
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [])
 
   useEffect(() => {
     if (!sectionRef.current) return
@@ -41,8 +135,21 @@ export default function Projects({ onOpenProject }) {
       id="projects"
       ref={sectionRef}
       className="section-white rounded-top-section"
-      style={{ padding: 'clamp(3rem,6vw,6rem) 0 clamp(3.5rem,7vw,7rem)', position: 'relative', zIndex: 2 }}
+      style={{
+        padding: 'clamp(3rem,6vw,6rem) 0 clamp(3.5rem,7vw,7rem)', position: 'relative', zIndex: 2,
+        background: isDark ? '#222222' : undefined,
+        color: isDark ? '#e8e8e8' : undefined,
+        transition: 'background 0.4s ease, color 0.4s ease',
+      }}
     >
+      {/* Global peek image — rendered once, follows mouse */}
+      <PeekImage
+        src={peekSrc}
+        visible={peekVisible}
+        mouseX={mouse.x}
+        mouseY={mouse.y}
+      />
+
       <div style={{ padding: '0 clamp(1.25rem, 4vw, 3.5rem)' }}>
         {/* Label */}
         <div className="reveal reveal-d1 flex items-center gap-3 mb-16">
@@ -51,13 +158,13 @@ export default function Projects({ onOpenProject }) {
               fontFamily: "'DM Mono', monospace",
               fontSize: '0.72rem',
               letterSpacing: '0.18em',
-              color: 'rgba(0,0,0,0.3)',
+              color: dmTextSub,
               textTransform: 'uppercase',
             }}
           >
             03 / My Work
           </span>
-          <div style={{ flex: 1, height: 1, background: 'rgba(0,0,0,0.07)' }} />
+          <div style={{ flex: 1, height: 1, background: dmBorder }} />
         </div>
 
         {/* Heading */}
@@ -67,7 +174,7 @@ export default function Projects({ onOpenProject }) {
               fontFamily: "'Bebas Neue', sans-serif",
               fontSize: 'clamp(2.8rem, 8vw, 7rem)',
               lineHeight: 0.9,
-              color: '#0a0a0a',
+              color: dmText,
               letterSpacing: '0.01em',
             }}
           >
@@ -80,7 +187,7 @@ export default function Projects({ onOpenProject }) {
           style={{
             fontWeight: 300,
             fontSize: '0.9rem',
-            color: 'rgba(0,0,0,0.45)',
+            color: dmTextMuted,
             fontFamily: "'DM Mono', monospace",
             letterSpacing: '0.06em',
             marginBottom: '3rem',
@@ -96,6 +203,8 @@ export default function Projects({ onOpenProject }) {
               key={i}
               data-hover
               onClick={() => onOpenProject && onOpenProject(p)}
+              onMouseEnter={() => handleRowMouseEnter(projectImages[i])}
+              onMouseLeave={handleRowMouseLeave}
               className="project-row"
               style={{ gap: '1rem' }}
             >
@@ -104,7 +213,7 @@ export default function Projects({ onOpenProject }) {
                   style={{
                     fontFamily: "'DM Mono', monospace",
                     fontSize: '0.72rem',
-                    color: 'rgba(0,0,0,0.3)',
+                    color: dmTextSub,
                     letterSpacing: '0.08em',
                     minWidth: '2.5rem',
                     flexShrink: 0,
@@ -120,7 +229,7 @@ export default function Projects({ onOpenProject }) {
                     fontFamily: "'DM Mono', monospace",
                     fontSize: '0.7rem',
                     letterSpacing: '0.08em',
-                    color: 'rgba(0,0,0,0.4)',
+                    color: dmTextSub,
                   }}
                   className="hidden md:inline"
                 >
@@ -143,7 +252,7 @@ export default function Projects({ onOpenProject }) {
                   />
                   {p.status}
                 </span>
-                <span className="project-row-arrow" style={{ color: 'rgba(0,0,0,0.5)' }}>→</span>
+                <span className="project-row-arrow" style={{ color: isDark ? 'rgba(163,230,53,0.6)' : 'rgba(0,0,0,0.5)' }}>→</span>
               </div>
             </div>
           ))}

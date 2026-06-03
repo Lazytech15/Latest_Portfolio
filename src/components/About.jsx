@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useDarkMode } from '../DarkModeContext'
 
 const highlights = [
   {
@@ -46,14 +47,27 @@ function useReveal(ref) {
 export default function About() {
   const sectionRef = useRef(null)
   const [expanded, setExpanded] = useState(null)
+  const { isDark } = useDarkMode()
   useReveal(sectionRef)
+
+  const dmText = isDark ? '#e8e8e8' : '#0a0a0a'
+  const dmTextMuted = isDark ? 'rgba(232,232,232,0.55)' : 'rgba(0,0,0,0.65)'
+  const dmTextSub = isDark ? 'rgba(232,232,232,0.35)' : 'rgba(0,0,0,0.35)'
+  const dmBorder = isDark ? 'rgba(163,230,53,0.12)' : 'rgba(0,0,0,0.08)'
+  const dmCardBg = isDark ? '#2a2a2a' : 'var(--white)'
 
   return (
     <section
       id="about"
       ref={sectionRef}
       className="section-white rounded-top-section"
-      style={{ padding: 'clamp(3rem,6vw,6rem) 0 clamp(3rem,6vw,6rem)', marginTop: '-2rem', position: 'relative', zIndex: 2 }}
+      style={{
+        padding: 'clamp(3rem,6vw,6rem) 0 clamp(3rem,6vw,6rem)',
+        marginTop: '-2rem', position: 'relative', zIndex: 2,
+        background: isDark ? '#222222' : undefined,
+        color: isDark ? '#e8e8e8' : undefined,
+        transition: 'background 0.4s ease, color 0.4s ease',
+      }}
     >
       <div style={{ padding: '0 clamp(1.25rem, 4vw, 3.5rem)' }}>
         {/* Section label */}
@@ -63,13 +77,13 @@ export default function About() {
               fontFamily: "'DM Mono', monospace",
               fontSize: '0.72rem',
               letterSpacing: '0.18em',
-              color: 'rgba(0,0,0,0.35)',
+              color: dmTextSub,
               textTransform: 'uppercase',
             }}
           >
             01 / About Me
           </span>
-          <div style={{ flex: 1, height: 1, background: 'rgba(0,0,0,0.08)' }} />
+          <div style={{ flex: 1, height: 1, background: dmBorder }} />
         </div>
 
         {/* Hero text + bio */}
@@ -81,7 +95,7 @@ export default function About() {
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontSize: 'clamp(2.8rem, 8vw, 7rem)',
                 lineHeight: 0.9,
-                color: '#0a0a0a',
+                color: dmText,
                 letterSpacing: '0.01em',
                 marginBottom: '2rem',
               }}
@@ -90,12 +104,12 @@ export default function About() {
             </h2>
 
             <div className="reveal reveal-d3 space-y-5">
-              <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', lineHeight: 1.75, color: 'rgba(0,0,0,0.65)', fontWeight: 300 }}>
+              <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', lineHeight: 1.75, color: dmTextMuted, fontWeight: 300 }}>
                 I work across the entire stack — from designing MySQL schemas and building PHP backends,
                 to crafting pixel-perfect React interfaces, and programming ESP32 microcontrollers for
                 IoT deployments. My projects span web, mobile, desktop, and hardware.
               </p>
-              <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', lineHeight: 1.75, color: 'rgba(0,0,0,0.65)', fontWeight: 300 }}>
+              <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', lineHeight: 1.75, color: dmTextMuted, fontWeight: 300 }}>
                 I also build automation workflows with n8n that connect APIs, trigger events,
                 and eliminate repetitive work. If there's a problem to solve, I'll find the right tool
                 — whether that's a soldering iron or a webhook.
@@ -113,18 +127,18 @@ export default function About() {
           </div>
 
           {/* Stats column */}
-          <div className="reveal reveal-d3 grid grid-cols-2 gap-px bg-[rgba(0,0,0,0.06)]">
+          <div className="reveal reveal-d3 grid grid-cols-2 gap-px" style={{ background: dmBorder }}>
             {[
               { value: '3+', label: 'Years Experience' },
               { value: '20+', label: 'Projects Shipped' },
               { value: '5+', label: 'Tech Domains' },
               { value: 'PHL', label: 'Philippines · Remote-Ready' },
             ].map((s, i) => (
-              <div key={i} style={{ background: 'var(--white)', padding: 'clamp(1.25rem, 3vw, 2rem)' }}>
-                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', color: '#0a0a0a', lineHeight: 1 }}>
+              <div key={i} style={{ background: dmCardBg, padding: 'clamp(1.25rem, 3vw, 2rem)', transition: 'background 0.4s ease' }}>
+                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', color: isDark ? '#a3e635' : '#0a0a0a', lineHeight: 1 }}>
                   {s.value}
                 </div>
-                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.7rem', letterSpacing: '0.1em', color: 'rgba(0,0,0,0.4)', marginTop: '0.4rem', textTransform: 'uppercase' }}>
+                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.7rem', letterSpacing: '0.1em', color: dmTextSub, marginTop: '0.4rem', textTransform: 'uppercase' }}>
                   {s.label}
                 </div>
               </div>
@@ -139,7 +153,7 @@ export default function About() {
               fontFamily: "'DM Mono', monospace",
               fontSize: '0.72rem',
               letterSpacing: '0.18em',
-              color: 'rgba(0,0,0,0.3)',
+              color: dmTextSub,
               textTransform: 'uppercase',
               marginBottom: '1rem',
             }}
@@ -153,7 +167,7 @@ export default function About() {
                 data-hover
                 onClick={() => setExpanded(expanded === i ? null : i)}
                 style={{
-                  borderTop: '1px solid rgba(0,0,0,0.08)',
+                  borderTop: `1px solid ${dmBorder}`,
                   padding: '1.25rem 0',
                   display: 'grid',
                   gridTemplateColumns: '1fr auto',
@@ -163,10 +177,10 @@ export default function About() {
               >
                 <div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', flexWrap: 'wrap' }}>
-                    <span style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(1.1rem, 3vw, 1.8rem)', color: '#0a0a0a' }}>
+                    <span style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(1.1rem, 3vw, 1.8rem)', color: dmText }}>
                       {h.label}
                     </span>
-                    <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.68rem', color: 'rgba(0,0,0,0.35)', letterSpacing: '0.06em' }}>
+                    <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.68rem', color: dmTextSub, letterSpacing: '0.06em' }}>
                       {h.tech}
                     </span>
                   </div>
@@ -177,17 +191,17 @@ export default function About() {
                       transition: 'max-height 0.4s cubic-bezier(0.16,1,0.3,1)',
                     }}
                   >
-                    <p style={{ fontWeight: 300, fontSize: '0.92rem', color: 'rgba(0,0,0,0.55)', lineHeight: 1.6, paddingTop: '0.75rem' }}>
+                    <p style={{ fontWeight: 300, fontSize: '0.92rem', color: dmTextMuted, lineHeight: 1.6, paddingTop: '0.75rem' }}>
                       {h.detail}
                     </p>
                   </div>
                 </div>
-                <span style={{ fontSize: '1rem', color: 'rgba(0,0,0,0.3)', transition: 'transform 0.3s ease', transform: expanded === i ? 'rotate(45deg)' : 'rotate(0deg)' }}>
+                <span style={{ fontSize: '1rem', color: isDark ? '#a3e635' : 'rgba(0,0,0,0.3)', transition: 'transform 0.3s ease, color 0.4s ease', transform: expanded === i ? 'rotate(45deg)' : 'rotate(0deg)' }}>
                   +
                 </span>
               </div>
             ))}
-            <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }} />
+            <div style={{ borderTop: `1px solid ${dmBorder}` }} />
           </div>
         </div>
 

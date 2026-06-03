@@ -1,5 +1,7 @@
 import logo_nobackground from '../../public/ed_logo_noBackground.png'
 import { useEffect, useRef, useState } from 'react'
+import DarkModeToggle from './DarkModeToggle'
+import { useDarkMode } from '../DarkModeContext'
 
 const ROLES = [
   'Full Stack Developer',
@@ -75,6 +77,7 @@ export default function Hero() {
   const canvasRef = useRef(null)
   const roleText = useTypewriter(ROLES)
   const phTime = usePhilippinesClock()
+  const { isDark } = useDarkMode()
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -145,14 +148,15 @@ export default function Hero() {
 
   return (
     <section style={{
-      background: '#0a0a0a',
+      background: isDark ? '#1a1a1a' : '#0a0a0a',
       minHeight: '100vh',
       fontFamily: "'DM Sans', sans-serif",
-      color: '#f5f3ee',
+      color: isDark ? '#e8e8e8' : '#f5f3ee',
       display: 'flex',
       flexDirection: 'column',
       position: 'relative',
       overflow: 'hidden',
+      transition: 'background 0.4s ease, color 0.4s ease',
     }}>
 
       {/* ── Particle canvas ── */}
@@ -175,29 +179,34 @@ export default function Hero() {
       ))}
 
       {/* ── Top bar ── */}
-      <div style={{
-        position: 'relative', zIndex: 10,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '1.2rem 1.5rem',
-        animation: 'heroSlideDown 0.7s cubic-bezier(0.16,1,0.3,1) both',
-      }}>
+    <div style={{
+      position: 'relative', zIndex: 10,
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '1.2rem 1.5rem',
+      animation: 'heroSlideDown 0.7s cubic-bezier(0.16,1,0.3,1) both',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <img src={logo_nobackground} alt="ESA Logo" style={{ height: 50, width: 'auto' }} />
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{
-            width: 7, height: 7, borderRadius: '50%',
-            background: '#ffffff', display: 'inline-block',
-            animation: 'ejPulse 2s ease-in-out infinite',
-          }} />
-          <span style={{
-            fontFamily: "'DM Mono', monospace",
-            fontSize: 'clamp(0.85rem, 2.5vw, 1.5rem)', letterSpacing: '0.08em',
-            color: 'rgba(255,255,255,0.5)',
-          }}>
-            {phTime}
-          </span>
-        </div>
+        <span style={{ display: 'flex', fontSize: '1.1rem', fontWeight: '700', letterSpacing: '0.05em' }}>
+          {'EABLAO.DEV'.split('').map((char, i) => (
+            <span
+              key={i}
+              style={{
+                display: 'inline-block',
+                color: isDark ? '#a3e635' : '#ffffff',
+                opacity: 0,
+                animation: `letterFall 0.4s cubic-bezier(0.16,1,0.3,1) forwards`,
+                animationDelay: `${0.3 + i * 0.07}s`,
+                transition: 'color 0.4s ease',
+              }}
+            >
+              {char === ' ' ? '\u00A0' : char}
+            </span>
+          ))}
+        </span>
       </div>
+      <DarkModeToggle />
+    </div>
 
       {/* ── Body ── */}
       <div style={{
@@ -362,6 +371,7 @@ export default function Hero() {
         @keyframes heroFadeUp    { from{opacity:0;transform:translateY(30px)}  to{opacity:1;transform:translateY(0)} }
         @keyframes heroFloat     { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-18px) scale(1.02)} }
         @keyframes heroScrollLine{ 0%,100%{transform:scaleY(1);opacity:0.4} 50%{transform:scaleY(0.5);opacity:0.1} }
+        @keyframes letterFall    { 0%{opacity:0;transform:translateY(-20px)} 100%{opacity:1;transform:translateY(0)} }
       `}</style>
     </section>
   )

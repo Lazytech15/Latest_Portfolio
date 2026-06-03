@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useDarkMode } from '../DarkModeContext'
 
 const skillGroups = [
   {
@@ -155,6 +156,7 @@ function SkillRow({ group, isOpen, onToggle, triggerBars }) {
 export default function Skills() {
   const sectionRef = useRef(null)
   const [openIndex, setOpenIndex] = useState(null)
+  const { isDark } = useDarkMode()
 
   useEffect(() => {
     if (!sectionRef.current) return
@@ -178,7 +180,11 @@ export default function Skills() {
     <section
       id="skills"
       ref={sectionRef}
-      style={{ background: 'var(--bg)', padding: 'clamp(3.5rem,7vw,7rem) 0', position: 'relative', zIndex: 1 }}
+      style={{
+        background: isDark ? '#1a1a1a' : 'var(--bg)',
+        padding: 'clamp(3.5rem,7vw,7rem) 0', position: 'relative', zIndex: 1,
+        transition: 'background 0.4s ease',
+      }}
     >
       <div style={{ padding: '0 clamp(1.25rem, 4vw, 3.5rem)' }}>
         {/* Label */}

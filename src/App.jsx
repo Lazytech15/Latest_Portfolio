@@ -4,6 +4,7 @@ import About from './components/About'
 import Skills from './components/Skills'
 import Projects from './components/Projects'
 import Contact from './components/Contact'
+import { useDarkMode } from './DarkModeContext'
 
 // ─── Loading Screen ────────────────────────────────────────────────────────────
 function LoadingScreen({ onDone }) {
@@ -275,6 +276,8 @@ function ProjectTransitionScreen({ onPeakReached, onDone }) {
 }
 
 // ─── Project Page ──────────────────────────────────────────────────────────────
+
+// ─── Project Page ──────────────────────────────────────────────────────────────
 function ProjectPage({ project, onBack }) {
   const [mounted, setMounted] = useState(false)
   const [imgExpanded, setImgExpanded] = useState(false)
@@ -303,42 +306,123 @@ function ProjectPage({ project, onBack }) {
       transition: 'opacity 0.65s cubic-bezier(0.22,1,0.36,1), transform 0.65s cubic-bezier(0.22,1,0.36,1)',
     }}>
 
-      {/* ── Two-column layout ── */}
-      <div className="project-two-col" style={{
-        display: 'grid',
-        gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
-        minHeight: '100vh',
+      {/* ── Sticky top bar ── */}
+      <div style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0.85rem clamp(1.25rem, 4vw, 3rem)',
+        background: 'rgba(13,13,13,0.88)',
+        backdropFilter: 'blur(14px)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}>
+        {/* Back button */}
+        <button
+          data-hover
+          onClick={onBack}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '0.45rem',
+            background: 'none', border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: 100, padding: '7px 16px 7px 12px',
+            color: 'rgba(255,255,255,0.65)',
+            fontFamily: "'DM Mono', monospace", fontSize: '0.75rem',
+            letterSpacing: '0.08em', textTransform: 'uppercase',
+            cursor: 'none',
+            transition: 'border-color 0.18s, color 0.18s, background 0.18s',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.borderColor = '#C4FF0E'
+            e.currentTarget.style.color = '#C4FF0E'
+            e.currentTarget.style.background = 'rgba(196,255,14,0.06)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
+            e.currentTarget.style.color = 'rgba(255,255,255,0.65)'
+            e.currentTarget.style.background = 'none'
+          }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 5l-7 7 7 7" />
+          </svg>
+          Back
+        </button>
 
-        {/* ── LEFT: sticky image panel ── */}
-        <div className="project-img-panel" style={{
-          position: 'sticky',
-          top: 0,
-          height: '100vh',
-          background: '#111',
-          overflow: 'hidden',
-          cursor: project.image ? 'zoom-in' : 'default',
-          flexShrink: 0,
-        }}
+        {/* Project number + category */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{
+            fontFamily: "'DM Mono', monospace", fontSize: '0.65rem',
+            letterSpacing: '0.14em', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase',
+          }}>
+            {project.number}
+          </span>
+          <span style={{ width: 1, height: 10, background: 'rgba(255,255,255,0.12)' }} />
+          <span style={{
+            fontFamily: "'DM Mono', monospace", fontSize: '0.65rem',
+            letterSpacing: '0.12em', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase',
+          }}>
+            {project.category}
+          </span>
+        </div>
+
+        {/* Status */}
+        <span style={{
+          fontFamily: "'DM Mono', monospace", fontSize: '0.65rem',
+          color: project.status === 'Shipped' ? '#00b37a' : '#b38a00',
+          display: 'flex', alignItems: 'center', gap: 5,
+        }}>
+          <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'currentColor', display: 'inline-block' }} />
+          {project.status}
+        </span>
+      </div>
+
+      {/* ── Scrollable content ── */}
+      <div style={{ maxWidth: 820, margin: '0 auto', padding: 'clamp(2rem, 4vw, 3.5rem) clamp(1.25rem, 4vw, 2rem) 5rem' }}>
+
+        {/* ── Hero image ── */}
+        <div
           onClick={() => project.image && setImgExpanded(true)}
+          style={{
+            position: 'relative',
+            width: '100%',
+            aspectRatio: '16 / 9',
+            borderRadius: 14,
+            overflow: 'hidden',
+            background: '#111',
+            cursor: project.image ? 'zoom-in' : 'default',
+            marginBottom: 'clamp(2rem, 4vw, 3rem)',
+            border: '1px solid rgba(255,255,255,0.07)',
+          }}
         >
           {project.image ? (
             <>
               <img
                 src={project.image}
                 alt={`${project.title} preview`}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
+                style={{
+                  width: '100%', height: '100%',
+                  objectFit: 'cover', objectPosition: 'center',
+                  display: 'block',
+                }}
               />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(0,0,0,0.2) 0%, transparent 60%)' }} />
               <div style={{
-                position: 'absolute', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+                position: 'absolute', inset: 0,
+                background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.45) 100%)',
+              }} />
+              {/* Expand hint */}
+              <div style={{
+                position: 'absolute', bottom: 14, right: 14,
                 display: 'flex', alignItems: 'center', gap: 6,
-                background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)',
-                border: '1px solid rgba(255,255,255,0.12)', borderRadius: 100, padding: '5px 14px',
-                whiteSpace: 'nowrap',
+                background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)',
+                border: '1px solid rgba(255,255,255,0.1)', borderRadius: 100,
+                padding: '5px 12px', whiteSpace: 'nowrap',
               }}>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
-                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.62rem', color: 'rgba(255,255,255,0.5)', letterSpacing: '0.08em' }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2">
+                  <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                </svg>
+                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.6rem', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.08em' }}>
                   Tap to expand
                 </span>
               </div>
@@ -349,184 +433,160 @@ function ProjectPage({ project, onBack }) {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'repeating-linear-gradient(45deg, #111 0px, #111 10px, #0f0f0f 10px, #0f0f0f 20px)',
             }}>
-              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.68rem', color: 'rgba(255,255,255,0.12)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-                No preview available
+              <span style={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: 'clamp(4rem, 10vw, 8rem)',
+                color: 'rgba(255,255,255,0.05)',
+                letterSpacing: '0.04em',
+                userSelect: 'none',
+              }}>
+                {project.number}
               </span>
             </div>
           )}
         </div>
 
-        {/* ── RIGHT: scrollable details panel ── */}
-        <div style={{
-          overflowY: 'auto',
-          borderLeft: '1px solid rgba(255,255,255,0.06)',
-        }}>
-          <div style={{
-            padding: 'clamp(2rem, 4vw, 3.5rem) clamp(1.5rem, 3vw, 3rem)',
-            display: 'flex', flexDirection: 'column', gap: '2.5rem',
+        {/* ── Title block ── */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h1 style={{
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: 'clamp(2.8rem, 8vw, 5.5rem)',
+            lineHeight: 0.9,
+            color: '#f5f3ee',
+            letterSpacing: '0.01em',
+            margin: '0 0 0.85rem',
           }}>
+            {project.title}
+          </h1>
+          <p style={{
+            fontWeight: 300, fontSize: '1rem',
+            color: 'rgba(255,255,255,0.45)', lineHeight: 1.7,
+            margin: 0,
+          }}>
+            {project.description}
+          </p>
+        </div>
 
-            {/* Title + number/category + status */}
-            <div>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
-                <div style={{ flex: 1 }}>
-                  <h1 style={{
-                    fontFamily: "'Bebas Neue', sans-serif",
-                    fontSize: 'clamp(2.4rem, 5vw, 4.5rem)',
-                    lineHeight: 0.88, color: '#f5f3ee',
-                    letterSpacing: '0.01em',
-                    margin: 0,
-                  }}>
-                    {project.title}
-                  </h1>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.6rem' }}>
-                    <span style={{
-                      fontFamily: "'DM Mono', monospace", fontSize: '0.68rem',
-                      letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase',
-                    }}>
-                      {project.number}
-                    </span>
-                    <span style={{ width: 1, height: 10, background: 'rgba(255,255,255,0.15)' }} />
-                    <span style={{
-                      fontFamily: "'DM Mono', monospace", fontSize: '0.68rem',
-                      letterSpacing: '0.12em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase',
-                    }}>
-                      {project.category}
-                    </span>
-                  </div>
-                </div>
-                <span style={{
-                  fontFamily: "'DM Mono', monospace", fontSize: '0.68rem',
-                  color: project.status === 'Shipped' ? '#00b37a' : '#b38a00',
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  whiteSpace: 'nowrap', paddingTop: '0.4rem',
-                }}>
-                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'currentColor', display: 'inline-block' }} />
-                  {project.status}
-                </span>
+        {/* ── Meta strip ── */}
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
+          border: '1px solid rgba(255,255,255,0.07)',
+          borderRadius: 10, overflow: 'hidden',
+          marginBottom: '2.5rem',
+        }}>
+          {[
+            { label: 'Year',   value: project.year   },
+            { label: 'Role',   value: project.role   },
+            { label: 'Status', value: project.status },
+          ].map((m, i) => (
+            <div key={i} style={{
+              padding: '1rem 1.1rem',
+              borderRight: i < 2 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+              background: 'rgba(255,255,255,0.02)',
+            }}>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.58rem', color: 'rgba(255,255,255,0.2)', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                {m.label}
               </div>
-              <p style={{ fontWeight: 300, fontSize: '0.97rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.65 }}>
-                {project.description}
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 400, fontSize: '0.88rem', color: 'rgba(255,255,255,0.7)' }}>
+                {m.value}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Divider label helper ── */}
+        {/* Overview */}
+        <div style={{ marginBottom: '2.5rem' }}>
+          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.16em', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', display: 'block', marginBottom: '1rem' }}>
+            Overview
+          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {project.overview.map((p, i) => (
+              <p key={i} style={{ fontWeight: 300, fontSize: '0.95rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.85, margin: 0 }}>
+                {p}
               </p>
-            </div>
-
-            {/* Meta strip */}
-            <div style={{
-              display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
-              border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, overflow: 'hidden',
-            }}>
-              {[
-                { label: 'Year',   value: project.year   },
-                { label: 'Role',   value: project.role   },
-                { label: 'Status', value: project.status },
-              ].map((m, i) => (
-                <div key={i} style={{
-                  padding: '1rem 1.1rem',
-                  borderRight: i < 2 ? '1px solid rgba(255,255,255,0.07)' : 'none',
-                  background: 'rgba(255,255,255,0.02)',
-                }}>
-                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.6rem', color: 'rgba(255,255,255,0.2)', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
-                    {m.label}
-                  </div>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 400, fontSize: '0.88rem', color: 'rgba(255,255,255,0.7)' }}>
-                    {m.value}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Overview */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.65rem', letterSpacing: '0.16em', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase' }}>
-                Overview
-              </span>
-              {project.overview.map((p, i) => (
-                <p key={i} style={{ fontWeight: 300, fontSize: '0.93rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.8 }}>
-                  {p}
-                </p>
-              ))}
-            </div>
-
-            {/* Key Features */}
-            <div>
-              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.65rem', letterSpacing: '0.16em', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', display: 'block', marginBottom: '1rem' }}>
-                Key Features
-              </span>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                {project.highlights.map((h, i) => (
-                  <div key={i} style={{
-                    display: 'flex', alignItems: 'center', gap: '0.85rem',
-                    padding: '0.8rem 0',
-                    borderBottom: i < project.highlights.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
-                  }}>
-                    <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#C4FF0E', opacity: 0.7, flexShrink: 0 }} />
-                    <span style={{ fontWeight: 300, fontSize: '0.92rem', color: 'rgba(255,255,255,0.6)' }}>{h}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Tech Stack */}
-            <div>
-              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.65rem', letterSpacing: '0.16em', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', display: 'block', marginBottom: '0.75rem' }}>
-                Tech Stack
-              </span>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                {project.tech.map((t) => (
-                  <span key={t} className="tag">{t}</span>
-                ))}
-              </div>
-            </div>
-
-            {/* Links */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap',
-              paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.06)',
-            }}>
-              <button
-                data-hover
-                onClick={onBack}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '0.5rem',
-                  background: '#C4FF0E', border: 'none', borderRadius: 100,
-                  padding: '9px 20px 9px 16px', color: '#0a0a0a',
-                  fontFamily: "'DM Mono', monospace", fontSize: '0.82rem',
-                  fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
-                  cursor: 'none',
-                  boxShadow: '0 0 0 3px rgba(196,255,14,0.2), 0 4px 18px rgba(196,255,14,0.22)',
-                  transition: 'background 0.18s, box-shadow 0.18s, transform 0.18s',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = '#d4ff3e'
-                  e.currentTarget.style.boxShadow = '0 0 0 5px rgba(196,255,14,0.3), 0 6px 24px rgba(196,255,14,0.38)'
-                  e.currentTarget.style.transform = 'translateX(-2px)'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = '#C4FF0E'
-                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(196,255,14,0.2), 0 4px 18px rgba(196,255,14,0.22)'
-                  e.currentTarget.style.transform = 'translateX(0)'
-                }}
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 12H5M12 5l-7 7 7 7" />
-                </svg>
-                Back
-              </button>
-
-              {project.links?.github && (
-                <a data-hover href={project.links.github} target="_blank" rel="noopener noreferrer"
-                  className="btn btn-ghost" style={{ fontSize: '0.82rem', padding: '9px 20px' }}>
-                  View on GitHub ↗
-                </a>
-              )}
-              {project.links?.live && (
-                <a data-hover href={project.links.live} target="_blank" rel="noopener noreferrer"
-                  className="btn btn-fill" style={{ fontSize: '0.82rem', padding: '9px 20px' }}>
-                  Live Demo ↗
-                </a>
-              )}
-            </div>
+            ))}
           </div>
+        </div>
+
+        {/* ── Key Features ── */}
+        <div style={{ marginBottom: '2.5rem' }}>
+          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.16em', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', display: 'block', marginBottom: '1rem' }}>
+            Key Features
+          </span>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {project.highlights.map((h, i) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', gap: '0.85rem',
+                padding: '0.8rem 0',
+                borderBottom: i < project.highlights.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+              }}>
+                <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#C4FF0E', opacity: 0.7, flexShrink: 0 }} />
+                <span style={{ fontWeight: 300, fontSize: '0.92rem', color: 'rgba(255,255,255,0.6)' }}>{h}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Tech Stack ── */}
+        <div style={{ marginBottom: '2.5rem' }}>
+          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.16em', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', display: 'block', marginBottom: '0.85rem' }}>
+            Tech Stack
+          </span>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            {project.tech.map((t) => (
+              <span key={t} className="tag">{t}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Links / actions ── */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap',
+          paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.06)',
+        }}>
+          <button
+            data-hover
+            onClick={onBack}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              background: '#C4FF0E', border: 'none', borderRadius: 100,
+              padding: '9px 20px 9px 16px', color: '#0a0a0a',
+              fontFamily: "'DM Mono', monospace", fontSize: '0.82rem',
+              fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+              cursor: 'none',
+              boxShadow: '0 0 0 3px rgba(196,255,14,0.2), 0 4px 18px rgba(196,255,14,0.22)',
+              transition: 'background 0.18s, box-shadow 0.18s, transform 0.18s',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = '#d4ff3e'
+              e.currentTarget.style.boxShadow = '0 0 0 5px rgba(196,255,14,0.3), 0 6px 24px rgba(196,255,14,0.38)'
+              e.currentTarget.style.transform = 'translateX(-2px)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = '#C4FF0E'
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(196,255,14,0.2), 0 4px 18px rgba(196,255,14,0.22)'
+              e.currentTarget.style.transform = 'translateX(0)'
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 5l-7 7 7 7" />
+            </svg>
+            Back
+          </button>
+
+          {project.links?.github && (
+            <a data-hover href={project.links.github} target="_blank" rel="noopener noreferrer"
+              className="btn btn-ghost" style={{ fontSize: '0.82rem', padding: '9px 20px' }}>
+              View on GitHub ↗
+            </a>
+          )}
+          {project.links?.live && (
+            <a data-hover href={project.links.live} target="_blank" rel="noopener noreferrer"
+              className="btn btn-fill" style={{ fontSize: '0.82rem', padding: '9px 20px' }}>
+              Live Demo ↗
+            </a>
+          )}
         </div>
       </div>
 
@@ -539,7 +599,7 @@ function ProjectPage({ project, onBack }) {
         }}>
           <img src={project.image} alt={project.title} style={{
             maxWidth: '100%', maxHeight: '90vh', objectFit: 'contain',
-            borderRadius: 8, boxShadow: '0 40px 120px rgba(0,0,0,0.8)',
+            borderRadius: 10, boxShadow: '0 40px 120px rgba(0,0,0,0.8)',
             animation: 'lightboxIn 0.25s cubic-bezier(0.16,1,0.3,1) forwards',
           }} />
           <div style={{
@@ -557,29 +617,22 @@ function ProjectPage({ project, onBack }) {
           from { opacity: 0; transform: scale(0.94); }
           to   { opacity: 1; transform: scale(1); }
         }
-        @media (max-width: 768px) {
-          .project-two-col { grid-template-columns: 1fr !important; }
-          .project-img-panel {
-            position: relative !important; top: auto !important;
-            height: 55vw !important; min-height: 220px !important;
-          }
-        }
       `}</style>
     </div>
   )
 }
 
 // ─── Section definitions ───────────────────────────────────────────────────────
-const SECTIONS = [
-  { id: 'hero',     label: 'Home',     number: '00', bg: '#0a0a0a', tabBg: '#161616' },
-  { id: 'about',    label: 'About',    number: '01', bg: '#f5f3ee', tabBg: '#eceae4' },
-  { id: 'skills',   label: 'Skills',   number: '02', bg: '#0a0a0a', tabBg: '#161616' },
-  { id: 'projects', label: 'Projects', number: '03', bg: '#f5f3ee', tabBg: '#eceae4' },
-  { id: 'contact',  label: 'Contact',  number: '04', bg: '#0a0a0a', tabBg: '#161616' },
+const SECTIONS_BASE = [
+  { id: 'hero',     label: 'Home',     number: '00', lightBg: '#0a0a0a', darkBg: '#1a1a1a', lightTabBg: '#161616', darkTabBg: '#222222', isDarkSection: true },
+  { id: 'about',    label: 'About',    number: '01', lightBg: '#f5f3ee', darkBg: '#222222', lightTabBg: '#eceae4', darkTabBg: '#2a2a2a', isDarkSection: false },
+  { id: 'skills',   label: 'Skills',   number: '02', lightBg: '#0a0a0a', darkBg: '#1a1a1a', lightTabBg: '#161616', darkTabBg: '#222222', isDarkSection: true },
+  { id: 'projects', label: 'Projects', number: '03', lightBg: '#f5f3ee', darkBg: '#222222', lightTabBg: '#eceae4', darkTabBg: '#2a2a2a', isDarkSection: false },
+  { id: 'contact',  label: 'Contact',  number: '04', lightBg: '#0a0a0a', darkBg: '#1a1a1a', lightTabBg: '#161616', darkTabBg: '#222222', isDarkSection: true },
 ]
 
 // ─── Vertical Right Nav ────────────────────────────────────────────────────────
-function VerticalNav({ activeIndex, onNavigate, scrolled, showBackToTop }) {
+function VerticalNav({ activeIndex, onNavigate, scrolled, showBackToTop, sections }) {
   const [hoveredIndex, setHoveredIndex] = useState(null)
   const [hovered, setHovered] = useState(false)
 
@@ -591,7 +644,7 @@ function VerticalNav({ activeIndex, onNavigate, scrolled, showBackToTop }) {
       opacity: scrolled ? 1 : 0, pointerEvents: scrolled ? 'auto' : 'none',
       transition: 'transform 0.5s cubic-bezier(0.16,1,0.3,1), opacity 0.4s ease',
     }}>
-      {SECTIONS.map((section, i) => {
+      {sections.map((section, i) => {
         const isActive  = activeIndex === i
         const isHovered = hoveredIndex === i
         return (
@@ -666,7 +719,7 @@ function VerticalNav({ activeIndex, onNavigate, scrolled, showBackToTop }) {
 }
 
 // ─── Mobile Bottom Nav ─────────────────────────────────────────────────────────
-function MobileBottomNav({ activeIndex, onNavigate }) {
+function MobileBottomNav({ activeIndex, onNavigate, sections }) {
   return (
     <div style={{
       position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 6000,
@@ -674,7 +727,7 @@ function MobileBottomNav({ activeIndex, onNavigate }) {
       borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex',
       alignItems: 'stretch', paddingBottom: 'env(safe-area-inset-bottom)',
     }}>
-      {SECTIONS.map((section, i) => {
+      {sections.map((section, i) => {
         const isActive = activeIndex === i
         return (
           <button key={section.id} onClick={() => onNavigate(i)} style={{
@@ -730,6 +783,8 @@ export default function App() {
   const scrollRafId = useRef(null)
   const cardRefs = useRef([])
   const cardOffsets = useRef([])
+
+  const { isDark } = useDarkMode()
 
   const [loadingDone, setLoadingDone] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
@@ -1010,6 +1065,12 @@ const handleBack = useCallback(() => {
     <Contact />,
   ]
 
+  const SECTIONS = SECTIONS_BASE.map(s => ({
+    ...s,
+    bg: isDark ? s.darkBg : s.lightBg,
+    tabBg: isDark ? s.darkTabBg : s.lightTabBg,
+  }))
+
   // Project page is visible when navState is 'project' OR during any transition
   // with an active project (so it's behind the circle while it wipes out)
   const isShowingProject = navState === 'project'
@@ -1044,11 +1105,12 @@ const handleBack = useCallback(() => {
             onNavigate={navigateToSection}
             scrolled={navVisible}
             showBackToTop={showBackToTop}
+            sections={SECTIONS}
           />
         </div>
 
         {isTouchDevice && (
-          <MobileBottomNav activeIndex={activeIndex} onNavigate={navigateToSection} />
+          <MobileBottomNav activeIndex={activeIndex} onNavigate={navigateToSection} sections={SECTIONS} />
         )}
 
         <main style={{ paddingBottom: isTouchDevice ? 'calc(56px + env(safe-area-inset-bottom))' : 0 }} className="md:pb-0">
@@ -1068,7 +1130,7 @@ const handleBack = useCallback(() => {
               {i > 0 && (
                 <FolderTab
                   number={section.number} label={section.label}
-                  tabBg={section.tabBg} isDark={section.bg === '#0a0a0a'}
+                  tabBg={section.tabBg} isDark={section.isDarkSection}
                 />
               )}
               <div data-card-inner style={{ overflow: 'hidden', borderRadius: 'inherit' }}>

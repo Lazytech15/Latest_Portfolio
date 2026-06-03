@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import logo_nobackground from '../../public/ed_logo_noBackground.png'
+import { useDarkMode } from '../DarkModeContext'
 
 export default function Contact() {
   const sectionRef = useRef(null)
+  const { isDark } = useDarkMode()
   const [form, setForm] = useState({ name: '', email: '', message: '' })
   const [submitted, setSubmitted] = useState(false)
 
@@ -33,7 +35,7 @@ export default function Contact() {
     <section
       id="contact"
       ref={sectionRef}
-      style={{ background: 'var(--bg)', padding: 'clamp(3.5rem,7vw,7rem) 0 0', position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
+      style={{ background: isDark ? '#1a1a1a' : 'var(--bg)', padding: 'clamp(3.5rem,7vw,7rem) 0 0', position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', transition: 'background 0.4s ease' }}
     >
       <div style={{ padding: '0 clamp(1.25rem, 4vw, 3.5rem)', display: 'flex', flexDirection: 'column', gap: '0' }}>
         {/* Label */}
@@ -71,7 +73,7 @@ export default function Contact() {
 
             <div className="reveal reveal-d3 space-y-1" style={{ marginBottom: '2.5rem' }}>
               {[
-                { label: 'Email', value: 'youremail@example.com' },
+                { label: 'Email', value: 'emmanuelablao16@gmail.com' },
                 { label: 'Location', value: 'Philippines · Remote-Ready' },
                 { label: 'Response', value: 'Usually within 24 hours' },
               ].map((item) => (
@@ -124,7 +126,7 @@ export default function Contact() {
                   <input
                     type="text"
                     className="field-input"
-                    placeholder="John Doe"
+                    placeholder="Jose Dela ramirez"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                   />
@@ -136,7 +138,7 @@ export default function Contact() {
                   <input
                     type="email"
                     className="field-input"
-                    placeholder="john@example.com"
+                    placeholder="jose.delaramirez@example.com"
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
                   />
