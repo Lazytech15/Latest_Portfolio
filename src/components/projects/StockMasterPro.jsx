@@ -10,27 +10,29 @@ const StockMasterPro = {
   image: inventorycontrol,
 
   description:
-    'A full-stack inventory management system built for small-to-medium businesses — featuring real-time dashboards, barcode scanning, role-based access control, automated low-stock alerts, and purchase order generation.',
+    'A fully client-side inventory management system built with React + Vite — featuring a responsive marketing landing page, modal-based authentication, real-time dashboards, role-based access control, automated low-stock alerts, and purchase order management. All state is managed in-browser with localStorage persistence, making it instantly deployable with zero backend dependencies.',
 
   overview: [
-    'Inventory Control is a comprehensive inventory management platform built to solve real operational pain points for SMEs. The system handles everything from product creation and stock adjustments to purchase order workflows and executive-level reporting — all in one unified interface.',
-    'The frontend is built with React + Vite and styled with TailwindCSS, communicating with a PHP REST API backed by MySQL. Authentication uses JWT tokens with role-scoped payloads, ensuring every API route and UI element enforces the correct permission level for Admin, Manager, and Staff users.',
-    'The dashboard delivers real-time inventory visibility through chart-driven overviews powered by Recharts — including weekly stock movement, category value breakdowns, top products by value, and a priority reorder table. All data updates reactively across sessions without page reloads.',
-    'Key operational features include barcode scanning for rapid stock intake, one-click purchase order generation pre-filled from low-stock alerts, CSV export for any inventory snapshot or movement log, and a full audit trail of every stock movement tied to the acting user.',
+    'Inventory Control is a comprehensive inventory management platform built to solve real operational pain points for SMEs. The system handles everything from product creation and stock adjustments to purchase order workflows and executive-level reporting — all in one unified, fully client-side interface with no backend required.',
+    'The app is built with React + Vite and styled with TailwindCSS. A custom useReducer-powered AppContext manages all application state — products, movements, purchase orders, alerts, and session — and persists everything to localStorage so data survives page reloads without a database.',
+    'The entry point is a fully responsive marketing landing page featuring a sticky navbar, animated hero section with a live dashboard preview mockup, feature grid, SmartScan AI product spotlight, interactive monthly/annual pricing toggle across three subscription tiers, testimonials, FAQ accordion, and a full footer. Authentication is handled via a modal layered over the landing page rather than a separate route.',
+    'The dashboard delivers real-time inventory visibility through chart-driven overviews powered by Recharts — including weekly stock movement bar charts, category value donut charts, top products by value, and a priority reorder table. All data updates reactively across the session via a single centralized reducer that recomputes derived state — alerts, totals, and breakdowns — on every dispatch.',
+    'Key operational features include stock movement tracking with full inbound/outbound audit trails, one-click purchase order generation pre-filled from low-stock alerts, CSV-ready reporting, and a multi-user role system with Admin, Manager, and Staff permission scopes enforced at the UI layer.',
   ],
 
-  tech: ['React Vite', 'PHP', 'MySQL', 'TailwindCSS'],
+  tech: ['React Vite', 'TailwindCSS', 'Recharts', 'date-fns'],
 
-  // Used by ProjectPage in the portfolio App.jsx
   highlights: [
-    'Barcode scanning for rapid stock intake via USB or camera reader',
-    'Role-based access control — Admin, Manager, and Staff with scoped permissions',
+    'Responsive marketing landing page with animated hero, pricing toggle, and FAQ accordion',
+    'Login modal layered over the landing page — no separate route or full-page redirect',
+    'Role-based access control — Admin, Manager, and Staff with scoped UI permissions',
     'Automated low-stock alerts with configurable per-product reorder thresholds',
     'One-click purchase order generation pre-filled from alert data',
     'Real-time analytics dashboard with Recharts — movement, category, and value charts',
     'Full stock movement audit trail tied to the acting user',
-    'CSV export for inventory snapshots, movement logs, and reports',
-    'JWT authentication with role-scoped tokens on every API route',
+    'localStorage persistence — full state survives page reloads with zero backend',
+    'SmartScan AI feature concept: barcode detection UI with AI-suggested reorder quantities',
+    'Monthly / annual pricing toggle with three subscription tiers',
   ],
 
   links: {
@@ -79,82 +81,87 @@ const StockMasterPro = {
 
   features: [
     {
-      icon: 'scan',
-      title: 'Barcode Scanning',
-      desc: 'Rapid stock intake via USB or camera-based barcode reader. Scan to auto-populate product fields and log a movement in under a second.',
+      icon: 'layout-dashboard',
+      title: 'Landing Page & Pricing',
+      desc: 'A fully responsive marketing landing page with animated hero, SmartScan AI feature spotlight, monthly/annual pricing toggle across three tiers, testimonials, and FAQ accordion — all before the user even logs in.',
+    },
+    {
+      icon: 'lock',
+      title: 'Modal Authentication',
+      desc: 'Login is a modal layered over the landing page with backdrop blur and slide-up animation. Supports quick demo account fill for Admin, Manager, and Staff roles with a single click.',
     },
     {
       icon: 'shield-check',
       title: 'Role-Based Access',
-      desc: 'Admin, Manager, and Staff roles each see only what they need. Permission guards enforced at both the UI layer and every API endpoint.',
+      desc: 'Admin, Manager, and Staff roles each see only what they need. Permission guards are enforced at the UI layer via a centralized AppContext with a useReducer-driven state machine.',
     },
     {
       icon: 'bell-ringing',
       title: 'Low-Stock Alerts',
-      desc: 'Automated threshold monitoring with in-app notifications. Alerts fire as soon as stock drops below configurable per-product reorder points.',
+      desc: 'Automated threshold monitoring recomputed on every state dispatch. Alerts fire as soon as stock drops below configurable per-product reorder points and surface in the dashboard and sidebar.',
     },
     {
       icon: 'file-invoice',
       title: 'Purchase Orders',
-      desc: 'One-click PO generation pre-filled from low-stock alerts. Supplier details and recommended quantities are automatically populated.',
+      desc: 'One-click PO generation pre-filled from low-stock alert data. Full order lifecycle from draft through delivery, with stock levels and audit logs updated atomically on receipt.',
     },
     {
       icon: 'chart-bar',
       title: 'Analytics Dashboard',
-      desc: 'Real-time charts for weekly stock movement, top products by value, category breakdowns, and margin potential — all in one view.',
-    },
-    {
-      icon: 'table-export',
-      title: 'CSV Export',
-      desc: 'Export any inventory snapshot, movement log, or report to CSV with a single click. Built for operations teams and accountants.',
+      desc: 'Real-time Recharts visualizations — weekly movement bar charts, category value donut charts, top products by value, and KPI cards. All charts update reactively from the shared reducer state.',
     },
   ],
 
   buildTimeline: [
     {
-      phase: 'Week 1–2',
-      title: 'Architecture & Database Design',
-      desc: 'Designed the relational schema covering products, categories, stock movements, purchase orders, suppliers, and users. Set up the PHP REST API skeleton with JWT-based authentication and role-scoped token payloads.',
+      phase: 'Week 1',
+      title: 'App Architecture & State Design',
+      desc: 'Designed the client-side data model covering products, categories, stock movements, purchase orders, suppliers, and users. Built the AppContext with a useReducer state machine and localStorage persistence layer, plus seed data generation for 30 days of realistic movements.',
     },
     {
-      phase: 'Week 3–4',
-      title: 'Core Inventory CRUD & Barcode Integration',
-      desc: 'Built full product management — create, read, update, delete — with category and supplier linkage. Integrated barcode scanning via QuaggaJS and validated against 500+ real product SKUs across multiple formats.',
+      phase: 'Week 2–3',
+      title: 'Landing Page & Modal Auth',
+      desc: 'Built the full responsive marketing landing page — sticky nav, animated hero with live dashboard preview mockup, feature grid, SmartScan AI spotlight, interactive pricing toggle, testimonials, and FAQ accordion. Implemented the login modal with backdrop blur, keyboard dismiss, and demo quick-fill buttons.',
     },
     {
-      phase: 'Week 5–6',
+      phase: 'Week 4–5',
+      title: 'Core Inventory CRUD & Stock Movements',
+      desc: 'Built full product management — create, read, update, delete — with category and supplier linkage. Implemented the inbound/outbound stock movement log with timestamps, user attribution, and notes. All movements dispatch atomically through the reducer.',
+    },
+    {
+      phase: 'Week 6–7',
       title: 'Dashboard, Charts & Reporting',
-      desc: 'Implemented the real-time dashboard with Recharts — bar charts, donut charts, and KPI cards. Built the reports module with date-range filtering, margin calculations, and one-click CSV export.',
+      desc: 'Implemented the real-time dashboard with Recharts — bar charts, donut charts, and KPI cards with week-over-week movement data. Built the reports module with date-range filtering, margin calculations, and movement history views.',
     },
     {
-      phase: 'Week 7–8',
-      title: 'RBAC, Alerts & Purchase Orders',
-      desc: 'Centralized role-based access control into a React context with a usePermission() hook. Built the automated low-stock alert engine and full purchase order workflow from creation through delivery and stock reconciliation.',
+      phase: 'Week 8',
+      title: 'Alerts, Purchase Orders & RBAC',
+      desc: 'Built the automated low-stock alert engine recomputing on every reducer dispatch. Implemented the full purchase order workflow — creation, status tracking, and atomic delivery reconciliation that updates stock and logs movements in a single dispatch. Finalized role-based UI permission scoping for Admin, Manager, and Staff.',
     },
     {
       phase: 'Week 9',
-      title: 'Testing, QA & Deployment',
-      desc: 'End-to-end testing across all three user roles. MySQL query profiling to hit sub-200ms API response times. Shipped to production with a small SME client managing over 2,800 active SKUs.',
+      title: 'Responsive Polish & Deployment',
+      desc: 'Mobile-first responsive audit across all pages and the landing page. Tuned animations, scroll behaviour, and modal layering. Deployed as a zero-backend static app to Cloudflare Workers with full localStorage state persistence.',
       accent: true,
     },
   ],
 
   challenges: [
     {
-      problem: 'Barcode scan events fired multiple times per physical scan, causing duplicate stock movement entries and inflated inventory counts.',
-      solution: 'Implemented client-side debouncing with a 300ms cooldown window and a server-side idempotency check keyed on SKU + timestamp, making double-writes impossible.',
+      problem: 'The existing app CSS set body { overflow: hidden } and #root { height: 100% } globally — styles designed for the locked app shell were preventing the landing page from scrolling at all.',
+      solution: 'Used a useEffect in LandingPage that overrides those properties to overflow: auto and height: auto on mount, then cleanly restores them on unmount when the user logs in and the app shell takes over.',
     },
     {
-      problem: 'Permission checks were scattered across individual components, making it easy to accidentally expose restricted UI elements to lower-permission users as the codebase grew.',
-      solution: 'Centralized all RBAC logic into a single React context with a usePermission() hook consumed app-wide, backed by server-side guards on every API route as a second layer of defence.',
+      problem: 'The login modal needed to sit on top of a fully scrollable landing page without breaking scroll lock — opening the modal should freeze the page, closing it should restore scroll.',
+      solution: 'Added a second useEffect keyed on the showLogin state that toggles body overflow between hidden and auto, giving precise modal-aware scroll control independent of the landing page mount/unmount lifecycle.',
     },
     {
-      problem: 'Stock value calculations and alert thresholds became stale when multiple users made concurrent adjustments, leading to incorrect dashboard readings.',
-      solution: 'Moved all derived state — alerts, totals, category breakdowns — into a single reducer that recomputes on every dispatch, guaranteeing the UI always reflects the true current state.',
+      problem: 'Stock value calculations, alert thresholds, and dashboard totals became stale when multiple state changes occurred in quick succession, leading to incorrect KPI readings.',
+      solution: 'Moved all derived state — alerts, totals, and category breakdowns — into the central reducer so they recompute synchronously on every dispatch, guaranteeing the UI always reflects true current state.',
     },
     {
       problem: 'Delivering purchase orders needed to update stock levels, log movements, and change PO status atomically — any partial failure would leave data inconsistent.',
-      solution: 'Wrapped the entire delivery flow in a MySQL transaction on the API side, and mirrored the same atomic sequence in the frontend reducer so UI state only commits on confirmed success.',
+      solution: 'Mirrored an atomic sequence in the frontend reducer: the entire delivery flow — PO status update, per-item stock increments, and movement log entries — commits as a single state transition so the UI is never partially updated.',
     },
   ],
 }
