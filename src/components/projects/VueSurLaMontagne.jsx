@@ -50,7 +50,7 @@ const VueSurLaMontagne = {
 
   // Links — read as project.links.github / project.links.live (App.jsx line ~490)
   links: {
-    github: 'https://github.com/Lazytech15/Vue_sur_la_Montagne',
+    github: 'https://vuesurlamontagne.emmanuelablao16.workers.dev',
     live:   'https://vue-sur-la-montagne.vercel.app',
   },
 
