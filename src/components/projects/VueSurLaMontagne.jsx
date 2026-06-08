@@ -51,7 +51,7 @@ const VueSurLaMontagne = {
   // Links — read as project.links.github / project.links.live (App.jsx line ~490)
   links: {
     github: 'https://vuesurlamontagne.emmanuelablao16.workers.dev',
-    live:   'https://vue-sur-la-montagne.vercel.app',
+    live:   'https://vuesurlamontagne.emmanuelablao16.workers.dev',
   },
 
   // Optional preview image shown in the sticky left panel
