@@ -8,21 +8,19 @@ import QuickTrackMobile from './projects/QuickTrackMobile'
 import AutoFlowEngine from './projects/AutoFlowEngine'
 import VueSurLaMontagne from './projects/VueSurLaMontagne'
 
-// images
 import vuesurlamontagne from '../../public/project/vuesurlamontagne.png'
 import inventorycontrol from '../../public/project/inventorycontrol.png'
 import quicktrack from '../../public/project/quicktrack.jpg'
 import nfcScanner from '../../public/project/nfcscanner.jpg'
 import eatall from '../../public/project/eatall.png'
 
-// Preview images mapped by project order — swap out as needed
 const projectImages = [
-  nfcScanner,       // 001 NFCAttendanceSystem
-  inventorycontrol, // 002 StockMasterPro
-  eatall,           // 003 NeuralDesk
-  quicktrack,       // 004 QuickTrackMobile
-  eatall,           // 005 AutoFlowEngine
-  vuesurlamontagne, // 006 VueSurLaMontagne
+  nfcScanner,
+  inventorycontrol,
+  eatall,
+  quicktrack,
+  eatall,
+  vuesurlamontagne,
 ]
 
 const projects = [
@@ -31,80 +29,54 @@ const projects = [
   NeuralDesk,
   QuickTrackMobile,
   AutoFlowEngine,
-  VueSurLaMontagne
+  VueSurLaMontagne,
 ]
 
-// ─── Hover Peek Image ────────────────────────────────────────────────────────
 function PeekImage({ src, visible, mouseX, mouseY }) {
   if (!src) return null
-
-  const offset = { x: 32, y: -80 }
-  const left = mouseX + offset.x
-  const top = mouseY + offset.y
-
   return (
-    <div
-      style={{
-        position: 'fixed',
-        left,
-        top,
-        pointerEvents: 'none',
-        zIndex: 9999,
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'scale(1) translateY(0px)' : 'scale(0.92) translateY(8px)',
-        transition: 'opacity 0.22s cubic-bezier(0.22,1,0.36,1), transform 0.22s cubic-bezier(0.22,1,0.36,1)',
-        willChange: 'transform, opacity',
-      }}
-    >
-      <div
-        style={{
-          width: 'clamp(280px, 28vw, 480px)',
-          aspectRatio: '16/10',
-          borderRadius: '6px',
-          overflow: 'hidden',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.25), 0 4px 16px rgba(0,0,0,0.15)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          background: '#111',
-        }}
-      >
-        <img
-          src={src}
-          alt=""
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            display: 'block',
-          }}
-        />
+    <div style={{
+      position: 'fixed',
+      left: mouseX + 32,
+      top: mouseY - 80,
+      pointerEvents: 'none',
+      zIndex: 9999,
+      opacity: visible ? 1 : 0,
+      transform: visible ? 'scale(1) translateY(0px)' : 'scale(0.92) translateY(8px)',
+      transition: 'opacity 0.22s cubic-bezier(0.22,1,0.36,1), transform 0.22s cubic-bezier(0.22,1,0.36,1)',
+      willChange: 'transform, opacity',
+    }}>
+      <div style={{
+        width: 'clamp(280px, 28vw, 480px)',
+        aspectRatio: '16/10',
+        overflow: 'hidden',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.25), 0 4px 16px rgba(0,0,0,0.15)',
+        border: '1px solid rgba(0,0,0,0.12)',
+        background: '#f5f3ee',
+      }}>
+        <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
       </div>
     </div>
   )
 }
 
-// ─── Projects section ────────────────────────────────────────────────────────
 export default function Projects({ onOpenProject }) {
   const sectionRef = useRef(null)
   const { isDark } = useDarkMode()
-  const dmText = isDark ? '#e8e8e8' : '#0a0a0a'
-  const dmTextMuted = isDark ? 'rgba(232,232,232,0.45)' : 'rgba(0,0,0,0.45)'
-  const dmTextSub = isDark ? 'rgba(232,232,232,0.3)' : 'rgba(0,0,0,0.3)'
-  const dmBorder = isDark ? 'rgba(163,230,53,0.12)' : 'rgba(0,0,0,0.07)'
+
+  /* ── LIGHT section (same slot as original section-white) ── */
+  const bg           = isDark ? '#222222' : '#f5f3ee'
+  const fg           = isDark ? '#e8e8e8' : '#0a0a0a'
+  const acc          = '#c8ff00'
+  const accText      = isDark ? '#c8ff00' : '#0a0a0a'
+  const muted        = isDark ? 'rgba(232,232,232,0.55)' : 'rgba(10,10,10,0.55)'
+  const subtle       = isDark ? 'rgba(232,232,232,0.30)' : 'rgba(10,10,10,0.35)'
+  const border       = isDark ? 'rgba(163,230,53,0.12)' : 'rgba(0,0,0,0.10)'
+  const borderStrong = isDark ? 'rgba(163,230,53,0.25)' : 'rgba(0,0,0,0.20)'
 
   const [peekSrc, setPeekSrc] = useState(null)
   const [peekVisible, setPeekVisible] = useState(false)
   const [mouse, setMouse] = useState({ x: 0, y: 0 })
-
-  const handleRowMouseEnter = (src) => {
-    if (src) {
-      setPeekSrc(src)
-      setPeekVisible(true)
-    }
-  }
-
-  const handleRowMouseLeave = () => {
-    setPeekVisible(false)
-  }
 
   useEffect(() => {
     const handleMouseMove = (e) => setMouse({ x: e.clientX, y: e.clientY })
@@ -134,133 +106,167 @@ export default function Projects({ onOpenProject }) {
     <section
       id="projects"
       ref={sectionRef}
-      className="section-white rounded-top-section"
+      className="rounded-top-section"
       style={{
-        padding: 'clamp(3rem,6vw,6rem) 0 clamp(3.5rem,7vw,7rem)', position: 'relative', zIndex: 2,
-        background: isDark ? '#222222' : undefined,
-        color: isDark ? '#e8e8e8' : undefined,
-        transition: 'background 0.4s ease, color 0.4s ease',
+        background: bg,
+        color: fg,
+        fontFamily: "'DM Sans', sans-serif",
+        position: 'relative',
+        overflow: 'hidden',
+        transition: 'background 0.5s ease, color 0.5s ease',
+        paddingBottom: 'clamp(4rem, 8vw, 7rem)',
       }}
     >
-      {/* Global peek image — rendered once, follows mouse */}
-      <PeekImage
-        src={peekSrc}
-        visible={peekVisible}
-        mouseX={mouse.x}
-        mouseY={mouse.y}
-      />
+      <PeekImage src={peekSrc} visible={peekVisible} mouseX={mouse.x} mouseY={mouse.y} />
 
-      <div style={{ padding: '0 clamp(1.25rem, 4vw, 3.5rem)' }}>
-        {/* Label */}
-        <div className="reveal reveal-d1 flex items-center gap-3 mb-16">
-          <span
-            style={{
-              fontFamily: "'DM Mono', monospace",
-              fontSize: '0.72rem',
-              letterSpacing: '0.18em',
-              color: dmTextSub,
-              textTransform: 'uppercase',
-            }}
-          >
-            03 / My Work
+      {/* Accent top rule */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: acc, zIndex: 10 }} />
+
+      {/* Ghost watermark */}
+      <div aria-hidden="true" style={{
+        position: 'absolute',
+        left: '-2%', bottom: '-5%',
+        fontFamily: "'Bebas Neue', Impact, sans-serif",
+        fontSize: 'clamp(100px, 16vw, 240px)',
+        lineHeight: 0.85,
+        color: 'transparent',
+        WebkitTextStroke: isDark ? '1px rgba(232,232,232,0.05)' : '1px rgba(10,10,10,0.05)',
+        userSelect: 'none', pointerEvents: 'none', zIndex: 0,
+      }}>
+        WORK
+      </div>
+
+      <div style={{
+        position: 'relative', zIndex: 2,
+        padding: 'clamp(2rem, 4vw, 3.5rem) clamp(1.5rem, 4vw, 3.5rem) 0',
+      }}>
+        {/* Section label */}
+        <div className="reveal reveal-d1" style={{
+          display: 'flex', alignItems: 'center', gap: '1rem',
+          marginBottom: 'clamp(1.5rem, 3vw, 2.5rem)',
+        }}>
+          <span style={{
+            fontFamily: "'DM Mono', monospace",
+            fontSize: '0.62rem', letterSpacing: '0.25em',
+            color: accText, textTransform: 'uppercase',
+          }}>
+            ↳ 03 / My Work
           </span>
-          <div style={{ flex: 1, height: 1, background: dmBorder }} />
+          <div style={{ flex: 1, height: '0.5px', background: border }} />
         </div>
 
         {/* Heading */}
-        <div className="reveal reveal-d2 mb-4">
-          <h2
-            style={{
-              fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: 'clamp(2.8rem, 8vw, 7rem)',
-              lineHeight: 0.9,
-              color: dmText,
-              letterSpacing: '0.01em',
-            }}
-          >
-            Selected Projects
+        <div className="reveal reveal-d2" style={{ marginBottom: '0.75rem' }}>
+          <h2 style={{
+            fontFamily: "'Bebas Neue', Impact, sans-serif",
+            fontSize: 'clamp(2.5rem, 5.5vw, 6rem)',
+            fontWeight: 400, lineHeight: 0.88,
+            letterSpacing: '-0.01em', color: fg, margin: 0,
+          }}>
+            Selected
+          </h2>
+          <h2 style={{
+            fontFamily: "'Bebas Neue', Impact, sans-serif",
+            fontSize: 'clamp(2.5rem, 5.5vw, 6rem)',
+            fontWeight: 400, lineHeight: 0.88,
+            color: 'transparent',
+            WebkitTextStroke: `2px ${fg}`,
+            margin: 0,
+          }}>
+            Projects.
           </h2>
         </div>
 
-        <p
-          className="reveal reveal-d3"
-          style={{
-            fontWeight: 300,
-            fontSize: '0.9rem',
-            color: dmTextMuted,
-            fontFamily: "'DM Mono', monospace",
-            letterSpacing: '0.06em',
-            marginBottom: '3rem',
-          }}
-        >
+        <p className="reveal reveal-d3" style={{
+          fontFamily: "'DM Mono', monospace",
+          fontWeight: 300, fontSize: '0.72rem',
+          color: subtle, letterSpacing: '0.1em',
+          marginBottom: '1.25rem',
+        }}>
           // Tap any project for full details
         </p>
 
         {/* Project list */}
-        <div className="reveal reveal-d3">
+        <div className="reveal reveal-d3" style={{ borderTop: `0.5px solid ${border}` }}>
           {projects.map((p, i) => (
             <div
               key={i}
-              data-hover
               onClick={() => onOpenProject && onOpenProject(p)}
-              onMouseEnter={() => handleRowMouseEnter(projectImages[i])}
-              onMouseLeave={handleRowMouseLeave}
-              className="project-row"
-              style={{ gap: '1rem' }}
+              onMouseEnter={() => { if (projectImages[i]) { setPeekSrc(projectImages[i]); setPeekVisible(true) } }}
+              onMouseLeave={() => setPeekVisible(false)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '0.9rem 0',
+                borderBottom: `0.5px solid ${border}`,
+                cursor: 'pointer',
+                gap: '1rem',
+                transition: 'padding-left 0.3s cubic-bezier(0.16,1,0.3,1)',
+              }}
+              onMouseOver={e => e.currentTarget.style.paddingLeft = '1.5rem'}
+              onMouseOut={e => e.currentTarget.style.paddingLeft = '0'}
             >
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 'clamp(0.75rem, 2vw, 2rem)', flexWrap: 'wrap', minWidth: 0 }}>
-                <span
-                  style={{
-                    fontFamily: "'DM Mono', monospace",
-                    fontSize: '0.72rem',
-                    color: dmTextSub,
-                    letterSpacing: '0.08em',
-                    minWidth: '2.5rem',
-                    flexShrink: 0,
-                  }}
-                >
+              {/* Left: number + title */}
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '1.25rem', minWidth: 0, overflow: 'hidden' }}>
+                <span style={{
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: '0.65rem', color: subtle,
+                  letterSpacing: '0.1em', minWidth: '2rem', flexShrink: 0,
+                }}>
                   {p.number}
                 </span>
-                <span className="project-row-title" style={{ minWidth: 0 }}>{p.title}</span>
+                <span style={{
+                  fontFamily: "'Bebas Neue', Impact, sans-serif",
+                  fontSize: 'clamp(1.2rem, 2.2vw, 2rem)',
+                  letterSpacing: '0.01em', color: fg, lineHeight: 1,
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                }}>
+                  {p.title}
+                </span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
-                <span
-                  style={{
-                    fontFamily: "'DM Mono', monospace",
-                    fontSize: '0.7rem',
-                    letterSpacing: '0.08em',
-                    color: dmTextSub,
-                  }}
-                  className="hidden md:inline"
-                >
+
+              {/* Right: category + status + arrow */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
+                <span style={{
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: '0.65rem', letterSpacing: '0.08em', color: subtle,
+                  whiteSpace: 'nowrap',
+                }}>
                   {p.category}
                 </span>
-                <span
-                  style={{
-                    fontFamily: "'DM Mono', monospace",
-                    fontSize: '0.7rem',
-                    color: p.status === 'Shipped' ? '#00b37a' : '#b38a00',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  <span
-                    className="status-dot"
-                    style={{ width: 5, height: 5, borderRadius: '50%', background: 'currentColor', display: 'inline-block', flexShrink: 0 }}
-                  />
+                <span style={{
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: '0.65rem',
+                  color: p.status === 'Shipped' ? '#00b37a' : '#b38a00',
+                  display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap',
+                }}>
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'currentColor', display: 'inline-block', flexShrink: 0 }} />
                   {p.status}
                 </span>
-                <span className="project-row-arrow" style={{ color: isDark ? 'rgba(163,230,53,0.6)' : 'rgba(0,0,0,0.5)' }}>→</span>
+                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.9rem', color: acc }}>→</span>
               </div>
             </div>
           ))}
         </div>
 
-        {/* View all */}
-        <div className="reveal reveal-d4 flex justify-end mt-10">
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="btn btn-ghost-dark">
+        {/* View all CTA */}
+        <div className="reveal reveal-d4" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'clamp(1.5rem, 3vw, 2.5rem)' }}>
+          <a
+            href="https://github.com/Lazytech15"
+            target="_blank" rel="noopener noreferrer"
+            style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: '0.72rem', letterSpacing: '0.14em',
+              color: muted, textDecoration: 'none',
+              textTransform: 'uppercase',
+              border: `0.5px solid ${borderStrong}`,
+              padding: '12px 26px',
+              transition: 'color 0.2s, border-color 0.2s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = fg; e.currentTarget.style.borderColor = fg }}
+            onMouseLeave={e => { e.currentTarget.style.color = muted; e.currentTarget.style.borderColor = borderStrong }}
+          >
             View all on GitHub ↗
           </a>
         </div>

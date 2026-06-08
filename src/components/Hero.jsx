@@ -1,6 +1,5 @@
 import logo_nobackground from '../../public/ed_logo_noBackground.png'
 import { useEffect, useRef, useState } from 'react'
-import DarkModeToggle from './DarkModeToggle'
 import { useDarkMode } from '../DarkModeContext'
 
 const ROLES = [
@@ -14,7 +13,6 @@ const ROLES = [
 function useTypewriter(words) {
   const [display, setDisplay] = useState('')
   const state = useRef({ wi: 0, ci: 0, deleting: false })
-
   useEffect(() => {
     let timer
     const tick = () => {
@@ -24,10 +22,10 @@ function useTypewriter(words) {
         setDisplay(word.slice(0, ci + 1))
         if (ci + 1 === word.length) {
           state.current.deleting = true
-          timer = setTimeout(tick, 1600)
+          timer = setTimeout(tick, 1800)
         } else {
           state.current.ci++
-          timer = setTimeout(tick, 75)
+          timer = setTimeout(tick, 80)
         }
       } else {
         setDisplay(word.slice(0, ci - 1))
@@ -35,344 +33,681 @@ function useTypewriter(words) {
           state.current.deleting = false
           state.current.wi = (wi + 1) % words.length
           state.current.ci = 0
-          timer = setTimeout(tick, 300)
+          timer = setTimeout(tick, 350)
         } else {
           state.current.ci--
-          timer = setTimeout(tick, 40)
+          timer = setTimeout(tick, 45)
         }
       }
     }
-    timer = setTimeout(tick, 500)
+    timer = setTimeout(tick, 600)
     return () => clearTimeout(timer)
   }, [words])
-
   return display
 }
 
 function usePhilippinesClock() {
   const [time, setTime] = useState('')
-
   useEffect(() => {
-    const updateClock = () => {
+    const update = () => {
       const now = new Date()
-      const phTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }))
-      let hours = phTime.getHours()
-      const ampm = hours >= 12 ? 'PM' : 'AM'
-      hours = hours % 12
-      if (hours === 0) hours = 12
-      const hoursStr = String(hours).padStart(2, '0')
-      const minutes = String(phTime.getMinutes()).padStart(2, '0')
-      const seconds = String(phTime.getSeconds()).padStart(2, '0')
-      setTime(`${hoursStr}:${minutes}:${seconds} ${ampm}`)
+      const ph = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }))
+      let h = ph.getHours()
+      const ampm = h >= 12 ? 'PM' : 'AM'
+      h = h % 12 || 12
+      const mm = String(ph.getMinutes()).padStart(2, '0')
+      const ss = String(ph.getSeconds()).padStart(2, '0')
+      setTime(`${String(h).padStart(2, '0')}:${mm}:${ss} ${ampm}`)
     }
-    updateClock()
-    const interval = setInterval(updateClock, 1000)
-    return () => clearInterval(interval)
+    update()
+    const id = setInterval(update, 1000)
+    return () => clearInterval(id)
   }, [])
-
   return time
 }
 
-export default function Hero() {
-  const canvasRef = useRef(null)
-  const roleText = useTypewriter(ROLES)
-  const phTime = usePhilippinesClock()
-  const { isDark } = useDarkMode()
+/* ── Orbiting circles ── */
+const ORBITS = [
+  { size: 10, rxFactor: 0.40, ryFactor: 0.30, speed: 0.0035, phaseOffset: 0 },
+  { size: 6,  rxFactor: 0.28, ryFactor: 0.22, speed: 0.006,  phaseOffset: Math.PI * 0.7 },
+  { size: 14, rxFactor: 0.18, ryFactor: 0.38, speed: 0.0025, phaseOffset: Math.PI * 1.4 },
+]
+
+function OrbitingCircles({ isDark }) {
+  const containerRef = useRef(null)
+  const circleRefs = useRef([])
+  const anglesRef = useRef(ORBITS.map(o => o.phaseOffset))
+  const rafRef = useRef(null)
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    let raf
+    const container = containerRef.current
+    if (!container) return
 
-    const resize = () => {
-      canvas.width  = canvas.offsetWidth
-      canvas.height = canvas.offsetHeight
-    }
-    resize()
-    window.addEventListener('resize', resize)
-
-    const COUNT = 42
-    const pts = Array.from({ length: COUNT }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      r: Math.random() * 1.6 + 0.4,
-      dx: (Math.random() - 0.5) * 0.3,
-      dy: (Math.random() - 0.5) * 0.3,
-      a: Math.random() * 0.25 + 0.06,
-    }))
-
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      pts.forEach(p => {
-        ctx.beginPath()
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(255,255,255,${p.a})`
-        ctx.fill()
-        p.x += p.dx; p.y += p.dy
-        if (p.x < 0) p.x = canvas.width
-        if (p.x > canvas.width) p.x = 0
-        if (p.y < 0) p.y = canvas.height
-        if (p.y > canvas.height) p.y = 0
+    const animate = () => {
+      ORBITS.forEach((orbit, i) => {
+        const circle = circleRefs.current[i]
+        if (!circle) return
+        anglesRef.current[i] += orbit.speed
+        const angle = anglesRef.current[i]
+        const rx = container.offsetWidth  * orbit.rxFactor
+        const ry = container.offsetHeight * orbit.ryFactor
+        const cx = container.offsetWidth  / 2
+        const cy = container.offsetHeight / 2
+        const x = cx + rx * Math.cos(angle) - orbit.size / 2
+        const y = cy + ry * Math.sin(angle) - orbit.size / 2
+        circle.style.transform = `translate(${x}px, ${y}px)`
       })
-      for (let i = 0; i < pts.length; i++) {
-        for (let j = i + 1; j < pts.length; j++) {
-          const dx = pts[i].x - pts[j].x
-          const dy = pts[i].y - pts[j].y
-          const d  = Math.sqrt(dx * dx + dy * dy)
-          if (d < 110) {
-            ctx.beginPath()
-            ctx.moveTo(pts[i].x, pts[i].y)
-            ctx.lineTo(pts[j].x, pts[j].y)
-            ctx.strokeStyle = `rgba(255,255,255,${0.05 * (1 - d / 110)})`
-            ctx.lineWidth = 0.5
-            ctx.stroke()
-          }
-        }
-      }
-      raf = requestAnimationFrame(draw)
+      rafRef.current = requestAnimationFrame(animate)
     }
-    draw()
 
-    return () => {
-      cancelAnimationFrame(raf)
-      window.removeEventListener('resize', resize)
-    }
+    rafRef.current = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(rafRef.current)
   }, [])
 
-  const bgCircles = [
-    { width: 520, height: 520, top: '-190px', right: '-110px', dur: '9s' },
-    { width: 280, height: 280, bottom: '-90px', left: '-70px',  dur: '12s' },
-    { width: 90,  height: 90,  bottom: '90px',  right: '19%',   dur: '7s'  },
-  ]
+  const fill = isDark ? '#ffffff' : '#0d0d0d'
+
+  return (
+    <div ref={containerRef} style={{
+      position: 'absolute', inset: 0,
+      pointerEvents: 'none', zIndex: 2, overflow: 'hidden',
+    }}>
+      {ORBITS.map((orbit, i) => (
+        <div
+          key={i}
+          ref={el => circleRefs.current[i] = el}
+          style={{
+            position: 'absolute', top: 0, left: 0,
+            width: orbit.size, height: orbit.size,
+            borderRadius: '50%',
+            background: fill,
+            opacity: isDark ? 0.22 : 0.14,
+            willChange: 'transform',
+            transition: 'background 0.5s ease, opacity 0.5s ease',
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+/* ── Bouncing ball (DVD-style corner bounce) ── */
+function BouncingBall({ isDark }) {
+  const containerRef = useRef(null)
+  const ballRef = useRef(null)
+  const stateRef = useRef({
+    x: 120, y: 120,
+    vx: 2.2, vy: 1.6,
+    size: 72,
+  })
+  const rafRef = useRef(null)
+
+  useEffect(() => {
+    const container = containerRef.current
+    const ball = ballRef.current
+    if (!container || !ball) return
+
+    const animate = () => {
+      const s = stateRef.current
+      const W = container.offsetWidth
+      const H = container.offsetHeight
+
+      s.x += s.vx
+      s.y += s.vy
+
+      // Bounce off edges
+      if (s.x <= 0) { s.x = 0; s.vx = Math.abs(s.vx) }
+      if (s.x >= W - s.size) { s.x = W - s.size; s.vx = -Math.abs(s.vx) }
+      if (s.y <= 0) { s.y = 0; s.vy = Math.abs(s.vy) }
+      if (s.y >= H - s.size) { s.y = H - s.size; s.vy = -Math.abs(s.vy) }
+
+      ball.style.transform = `translate(${s.x}px, ${s.y}px)`
+      rafRef.current = requestAnimationFrame(animate)
+    }
+
+    rafRef.current = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(rafRef.current)
+  }, [])
+
+  const fill = isDark ? '#ffffff' : '#0d0d0d'
+
+  return (
+    <div ref={containerRef} style={{
+      position: 'absolute', inset: 0,
+      pointerEvents: 'none', zIndex: 2, overflow: 'hidden',
+    }}>
+      <div ref={ballRef} style={{
+        position: 'absolute', top: 0, left: 0,
+        width: 72, height: 72,
+        borderRadius: '50%',
+        background: fill,
+        opacity: isDark ? 0.10 : 0.08,
+        willChange: 'transform',
+        transition: 'background 0.5s ease, opacity 0.5s ease',
+        /* soft glow */
+        boxShadow: isDark
+          ? '0 0 40px 12px rgba(255,255,255,0.06)'
+          : '0 0 40px 12px rgba(0,0,0,0.05)',
+      }} />
+    </div>
+  )
+}
+
+
+const NoiseSVG = () => (
+  <svg
+    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', opacity: 0.04, zIndex: 1 }}
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <filter id="noise">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+      <feColorMatrix type="saturate" values="0" />
+    </filter>
+    <rect width="100%" height="100%" filter="url(#noise)" />
+  </svg>
+)
+
+export default function Hero() {
+  const roleText = useTypewriter(ROLES)
+  const phTime = usePhilippinesClock()
+  const { isDark, toggle } = useDarkMode()
+
+  /* rotating accent word */
+  const [accentIdx, setAccentIdx] = useState(0)
+  const ACCENTS = ['systems.', 'experiences.', 'products.', 'ideas.']
+  useEffect(() => {
+    const id = setInterval(() => setAccentIdx(i => (i + 1) % ACCENTS.length), 2800)
+    return () => clearInterval(id)
+  }, [])
+
+  /* letter-stagger for name */
+  const NAME = 'EMMANUEL'
+  const SURNAME = 'ABLAO'
+
+  const bg   = isDark ? '#0d0d0d' : '#f2f0eb'
+  const fg   = isDark ? '#f2f0eb' : '#0d0d0d'
+  const acc  = '#c8ff00'           /* signature lime — decorative only */
+  const accText = isDark ? '#c8ff00' : fg   /* text uses fg in light mode for readability */
+  const muted = isDark ? 'rgba(242,240,235,0.50)' : 'rgba(13,13,13,0.60)'
+  const border = isDark ? 'rgba(242,240,235,0.12)' : 'rgba(13,13,13,0.15)'
+  const borderStrong = isDark ? 'rgba(242,240,235,0.25)' : 'rgba(13,13,13,0.30)'
 
   return (
     <section style={{
-      background: isDark ? '#1a1a1a' : '#0a0a0a',
+      background: bg,
       minHeight: '100vh',
+      color: fg,
       fontFamily: "'DM Sans', sans-serif",
-      color: isDark ? '#e8e8e8' : '#f5f3ee',
       display: 'flex',
       flexDirection: 'column',
       position: 'relative',
       overflow: 'hidden',
-      transition: 'background 0.4s ease, color 0.4s ease',
+      transition: 'background 0.5s ease, color 0.5s ease',
     }}>
 
-      {/* ── Particle canvas ── */}
-      <canvas ref={canvasRef} style={{
-        position: 'absolute', inset: 0,
-        width: '100%', height: '100%',
-        pointerEvents: 'none', zIndex: 1,
+      <NoiseSVG />
+      <OrbitingCircles isDark={isDark} />
+      <BouncingBall isDark={isDark} />
+
+      {/* ── Large ghost watermark ── */}
+      <div aria-hidden="true" style={{
+        position: 'absolute',
+        right: '2%',
+        top: '20%',
+        fontFamily: "'Bebas Neue', 'Impact', sans-serif",
+        fontSize: 'clamp(120px, 18vw, 280px)',
+        fontWeight: 900,
+        color: 'transparent',
+        WebkitTextStroke: isDark ? `1px ${borderStrong}` : `1px rgba(13,13,13,0.07)`,
+        lineHeight: 0.85,
+        userSelect: 'none',
+        zIndex: 0,
+        pointerEvents: 'none',
+        animation: 'ghostDrift 14s ease-in-out infinite alternate',
+      }}>
+        DEV
+      </div>
+
+      {/* ── Horizontal accent rule (top) ── */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0,
+        height: 3, background: acc, zIndex: 20,
       }} />
 
-      {/* ── Floating bg circles ── */}
-      {bgCircles.map((s, i) => (
-        <div key={i} style={{
-          position: 'absolute', borderRadius: '50%',
-          background: 'rgba(255,255,255,0.03)', pointerEvents: 'none',
-          width: s.width, height: s.height,
-          top: s.top, right: s.right, bottom: s.bottom, left: s.left,
-          animation: `heroFloat ${s.dur} ease-in-out infinite ${i % 2 ? 'reverse' : ''}`,
-          zIndex: 2,
-        }} />
-      ))}
+      {/* ── Top Bar ── */}
+      <nav style={{
+        position: 'relative', zIndex: 10,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '1.4rem 2rem',
+        borderBottom: `0.5px solid ${border}`,
+        animation: 'slideDown 0.7s cubic-bezier(0.16,1,0.3,1) both',
+      }}>
+        {/* Logo + wordmark */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <img src={logo_nobackground} alt="ESA Logo" style={{
+            height: 36, width: 'auto',
+            filter: isDark ? 'brightness(1)' : 'brightness(0)',
+          }} />
+          <span style={{
+            fontFamily: "'DM Mono', monospace",
+            fontSize: '0.8rem', letterSpacing: '0.18em',
+            color: isDark ? 'rgba(242,240,235,0.55)' : 'rgba(13,13,13,0.65)',
+            textTransform: 'uppercase',
+          }}>
+            EABLAO.DEV
+          </span>
+        </div>
 
-      {/* ── Top bar ── */}
-    <div style={{
-      position: 'relative', zIndex: 10,
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '1.2rem 1.5rem',
-      animation: 'heroSlideDown 0.7s cubic-bezier(0.16,1,0.3,1) both',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <img src={logo_nobackground} alt="ESA Logo" style={{ height: 50, width: 'auto' }} />
-        <span style={{ display: 'flex', fontSize: '1.1rem', fontWeight: '700', letterSpacing: '0.05em' }}>
-          {'EABLAO.DEV'.split('').map((char, i) => (
-            <span
-              key={i}
-              style={{
-                display: 'inline-block',
-                color: isDark ? '#a3e635' : '#ffffff',
-                opacity: 0,
-                animation: `letterFall 0.4s cubic-bezier(0.16,1,0.3,1) forwards`,
-                animationDelay: `${0.3 + i * 0.07}s`,
-                transition: 'color 0.4s ease',
-              }}
-            >
-              {char === ' ' ? '\u00A0' : char}
+        {/* Status pill + toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 7,
+            padding: '5px 12px',
+            border: `0.5px solid ${borderStrong}`,
+            borderRadius: 100,
+          }}>
+            <span style={{
+              width: 7, height: 7, borderRadius: '50%',
+              background: acc,
+              boxShadow: `0 0 8px ${acc}`,
+              animation: 'pulse 2s ease-in-out infinite',
+            }} />
+            <span style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: '0.67rem', letterSpacing: '0.13em',
+              color: isDark ? 'rgba(242,240,235,0.60)' : 'rgba(13,13,13,0.70)',
+            }}>
+              AVAILABLE FOR WORK
             </span>
-          ))}
-        </span>
-      </div>
-      <DarkModeToggle />
-    </div>
+          </div>
+          {/* Custom mode toggle — visible in both light and dark */}
+          <button
+            onClick={() => toggle()}
+            aria-label="Toggle dark mode"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '5px 10px 5px 6px',
+              border: `1px solid ${borderStrong}`,
+              borderRadius: 100,
+              background: isDark ? 'rgba(242,240,235,0.08)' : 'rgba(13,13,13,0.08)',
+              cursor: 'pointer',
+              transition: 'background 0.2s, border-color 0.2s',
+            }}
+          >
+            {/* Track */}
+            <div style={{
+              width: 28, height: 16, borderRadius: 8,
+              background: isDark ? acc : 'rgba(13,13,13,0.20)',
+              position: 'relative',
+              transition: 'background 0.3s',
+              flexShrink: 0,
+            }}>
+              <div style={{
+                position: 'absolute',
+                top: 2, left: isDark ? 14 : 2,
+                width: 12, height: 12, borderRadius: '50%',
+                background: isDark ? '#0d0d0d' : '#ffffff',
+                transition: 'left 0.25s cubic-bezier(0.16,1,0.3,1)',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+              }} />
+            </div>
+            <span style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: '0.62rem', letterSpacing: '0.12em',
+              color: isDark ? 'rgba(242,240,235,0.60)' : 'rgba(13,13,13,0.70)',
+              userSelect: 'none',
+            }}>
+              {isDark ? 'DARK' : 'LIGHT'}
+            </span>
+          </button>
+        </div>
+      </nav>
 
-      {/* ── Body ── */}
+      {/* ── Main grid ── */}
       <div style={{
-        flex: 1, display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        textAlign: 'center', padding: '2rem 1.25rem 5rem',
-        position: 'relative', zIndex: 5,
+        flex: 1,
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gridTemplateRows: 'auto auto',
+        position: 'relative',
+        zIndex: 5,
       }}>
 
-        {/* Role typewriter badge */}
+        {/* ─ LEFT COLUMN: Big stacked name + tagline ─ */}
         <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 8,
-          background: 'rgba(255,255,255,0.05)',
-          border: '1px solid rgba(255,255,255,0.12)',
-          borderRadius: '100px', padding: '7px 16px',
-          marginBottom: '1.5rem',
-          animation: 'heroFadeUp 0.7s 0.2s cubic-bezier(0.16,1,0.3,1) both',
-          flexWrap: 'wrap', justifyContent: 'center',
+          gridColumn: '1',
+          gridRow: '1 / 3',
+          padding: 'clamp(2rem, 5vw, 5rem) clamp(1.5rem, 3vw, 3rem)',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          borderRight: `0.5px solid ${border}`,
+          animation: 'fadeUp 0.9s 0.15s cubic-bezier(0.16,1,0.3,1) both',
         }}>
-          <span style={{
+          {/* Index tag */}
+          <div style={{
             fontFamily: "'DM Mono', monospace",
-            fontSize: 'clamp(0.65rem, 2vw, 0.78rem)', letterSpacing: '0.15em',
-            color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase',
+            fontSize: '0.62rem', letterSpacing: '0.25em',
+            color: accText, marginBottom: '1.5rem',
+            textTransform: 'uppercase',
           }}>
-            Currently a
-          </span>
-          <span style={{
-            fontFamily: "'DM Mono', monospace",
-            fontSize: 'clamp(0.78rem, 2.2vw, 0.9rem)', color: '#f5f3ee',
-            letterSpacing: '0.06em', minWidth: 160, textAlign: 'left',
+            ↳ PORTFOLIO — 2026
+          </div>
+
+          {/* Stacked name */}
+          <div style={{ overflow: 'hidden', marginBottom: '0.1rem' }}>
+            <h1 style={{
+              fontFamily: "'Bebas Neue', 'Impact', sans-serif",
+              fontSize: 'clamp(4rem, 9vw, 10rem)',
+              fontWeight: 400,
+              lineHeight: 0.88,
+              letterSpacing: '-0.01em',
+              margin: 0,
+              color: fg,
+              animation: 'riseUp 0.8s 0.3s cubic-bezier(0.16,1,0.3,1) both',
+            }}>
+              {NAME}
+            </h1>
+          </div>
+          <div style={{ overflow: 'hidden', marginBottom: '2.5rem' }}>
+            <h1 style={{
+              fontFamily: "'Bebas Neue', 'Impact', sans-serif",
+              fontSize: 'clamp(4rem, 9vw, 10rem)',
+              fontWeight: 400,
+              lineHeight: 0.88,
+              letterSpacing: '-0.01em',
+              margin: 0,
+              /* Outline text for surname */
+              color: 'transparent',
+              WebkitTextStroke: `2px ${fg}`,
+              animation: 'riseUp 0.8s 0.42s cubic-bezier(0.16,1,0.3,1) both',
+            }}>
+              {SURNAME}
+            </h1>
+          </div>
+
+          {/* Rotating verb phrase */}
+          <div style={{ marginBottom: '2.5rem' }}>
+            <p style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 'clamp(1rem, 2vw, 1.4rem)',
+              fontWeight: 300,
+              lineHeight: 1.5,
+              color: muted,
+              margin: 0,
+            }}>
+              I build end-to-end{' '}
+              <span style={{
+                color: fg, fontWeight: 600,
+                borderBottom: `2px solid ${acc}`,
+                paddingBottom: 1,
+                transition: 'opacity 0.3s ease',
+              }}>
+                {ACCENTS[accentIdx]}
+              </span>
+            </p>
+            <p style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 'clamp(0.85rem, 1.5vw, 1.1rem)',
+              fontWeight: 300,
+              color: muted,
+              margin: '0.6rem 0 0',
+              lineHeight: 1.7,
+              maxWidth: 420,
+            }}>
+              From IoT hardware and embedded systems to cross-platform
+              apps and web portals — with reliability at the core.
+            </p>
+          </div>
+
+          {/* CTAs */}
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+            <a
+              href="#contact"
+              onClick={e => { e.preventDefault(); document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' }) }}
+              style={{
+                display: 'inline-block',
+                background: acc, color: '#0d0d0d',
+                fontFamily: "'DM Mono', monospace",
+                fontSize: '0.75rem', fontWeight: 700,
+                letterSpacing: '0.15em', textTransform: 'uppercase',
+                padding: '14px 32px', borderRadius: 0,
+                border: 'none', textDecoration: 'none',
+                transition: 'transform 0.18s, box-shadow 0.18s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-3px, -3px)'; e.currentTarget.style.boxShadow = `4px 4px 0 ${fg}` }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translate(0,0)'; e.currentTarget.style.boxShadow = 'none' }}
+            >
+              Let's Work →
+            </a>
+
+            <a
+              href="#projects"
+              onClick={e => { e.preventDefault(); document.querySelector('#projects')?.scrollIntoView({ behavior: 'smooth' }) }}
+              style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: '0.72rem', letterSpacing: '0.14em',
+                color: muted, textDecoration: 'none',
+                borderBottom: `1px solid ${borderStrong}`,
+                paddingBottom: 2,
+                transition: 'color 0.2s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.color = fg}
+              onMouseLeave={e => e.currentTarget.style.color = muted}
+            >
+              See work ↓
+            </a>
+          </div>
+        </div>
+
+        {/* ─ RIGHT TOP: Role typewriter + metadata grid ─ */}
+        <div style={{
+          gridColumn: '2',
+          gridRow: '1',
+          padding: 'clamp(2rem, 5vw, 5rem) clamp(1.5rem, 3vw, 3rem) 2rem',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
+          borderBottom: `0.5px solid ${border}`,
+          animation: 'fadeUp 0.9s 0.3s cubic-bezier(0.16,1,0.3,1) both',
+        }}>
+          {/* Discipline display */}
+          <div style={{
+            fontFamily: "'Bebas Neue', 'Impact', sans-serif",
+            fontSize: 'clamp(1.8rem, 3.5vw, 3.6rem)',
+            lineHeight: 1.05,
+            letterSpacing: '0.02em',
+            color: fg,
+            marginBottom: '0.25rem',
           }}>
             {roleText}
             <span style={{
-              display: 'inline-block', width: 2, height: '0.9em',
-              background: '#f5f3ee', marginLeft: 2, verticalAlign: 'middle',
-              animation: 'ejBlink 1s step-end infinite',
-            }} />
-          </span>
-        </div>
-
-        {/* Brushstroke headline */}
-        <div style={{
-          position: 'relative', display: 'inline-block',
-          padding: 'clamp(0.8rem, 2vw, 1.4rem) clamp(1rem, 3vw, 2.8rem) clamp(1rem, 2.5vw, 1.9rem)',
-          marginBottom: '1.75rem',
-          animation: 'heroFadeUp 0.8s 0.35s cubic-bezier(0.16,1,0.3,1) both',
-          maxWidth: '100%',
-        }}>
-          <svg
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-            viewBox="0 0 820 240" preserveAspectRatio="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M18 42 C40 10 100 4 170 6 L650 2 C720 0 800 16 812 48 L815 96 C818 112 810 122 808 136 L806 182 C803 208 765 226 710 228 L120 230 C68 231 14 214 10 190 L5 100 C2 72 10 54 18 42 Z" fill="#ffffff"/>
-            <path d="M10 52 C6 38 8 24 18 16 L16 20 C8 28 6 42 8 56 Z" fill="#e0e0e0"/>
-            <path d="M810 36 C818 46 820 58 816 72 L813 68 C816 56 814 46 808 36 Z" fill="#e0e0e0"/>
-            <path d="M30 6 C80 -4 160 -4 220 4 L218 10 C158 2 80 2 32 12 Z" fill="#f0f0f0" opacity="0.7"/>
-            <path d="M560 2 C640 -2 740 8 798 28 L795 34 C737 14 640 4 560 8 Z" fill="#f0f0f0" opacity="0.6"/>
-            <path d="M14 196 C48 222 110 230 160 230 L158 224 C110 224 50 216 16 192 Z" fill="#e0e0e0" opacity="0.8"/>
-            <path d="M640 226 C700 226 770 214 806 192 L803 188 C767 210 700 222 640 222 Z" fill="#e0e0e0" opacity="0.75"/>
-            <path d="M80 12 C200 4 400 2 560 6 L558 14 C398 10 200 12 82 20 Z" fill="white" opacity="0.3"/>
-          </svg>
-          <h1 style={{
-            position: 'relative', zIndex: 2,
-            fontFamily: "'Permanent Marker', cursive",
-            fontSize: 'clamp(1.6rem, 4.5vw, 5rem)',
-            lineHeight: 1.15, color: '#0a0a0a',
-            textTransform: 'uppercase', letterSpacing: '0.01em', margin: 0,
-          }}>
-            I'm grateful you're here<br />let's explore together
-          </h1>
-        </div>
-
-        {/* Bio */}
-        <p style={{
-          fontSize: 'clamp(0.95rem, 2.5vw, 1.2rem)', fontWeight: 300,
-          color: 'rgba(245,243,238,0.7)',
-          maxWidth: 520, lineHeight: 1.9,
-          marginBottom: '2.2rem', letterSpacing: '0.01em',
-          animation: 'heroFadeUp 0.8s 0.5s cubic-bezier(0.16,1,0.3,1) both',
-          padding: '0 0.5rem',
-        }}>
-          Hi! I am Emmanuel Sapico Ablao, a full stack developer building end-to-end
-          digital experiences — from IoT hardware to cross-platform mobile,
-          desktop, and web apps.
-        </p>
-
-        {/* CTAs */}
-        <div style={{
-          display: 'flex', gap: 12, alignItems: 'center',
-          flexWrap: 'wrap', justifyContent: 'center',
-          animation: 'heroFadeUp 0.8s 0.65s cubic-bezier(0.16,1,0.3,1) both',
-        }}>
-          <a
-            href="#contact"
-            data-hover
-            onClick={(e) => {
-              e.preventDefault()
-              document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' })
-            }}
-            style={{
               display: 'inline-block',
-              background: '#ffffff', color: '#0a0a0a',
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: 'clamp(0.85rem, 2.5vw, 1.05rem)', fontWeight: 700,
-              letterSpacing: '0.1em', textTransform: 'uppercase',
-              padding: 'clamp(14px, 2vw, 18px) clamp(32px, 5vw, 56px)', borderRadius: 4,
-              border: 'none', textDecoration: 'none',
-              transition: 'opacity 0.2s, transform 0.2s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.opacity = '0.85'; e.currentTarget.style.transform = 'translateY(-3px)' }}
-            onMouseLeave={e => { e.currentTarget.style.opacity = '1';    e.currentTarget.style.transform = 'translateY(0)' }}
-          >
-            Let’s Work Together
-          </a>
+              width: 3, height: '0.8em',
+              background: acc,
+              marginLeft: 4,
+              verticalAlign: 'middle',
+              animation: 'blink 1s step-end infinite',
+            }} />
+          </div>
 
-          <a
-            href="#projects"
-            data-hover
-            onClick={(e) => {
-              e.preventDefault()
-              document.querySelector('#projects')?.scrollIntoView({ behavior: 'smooth' })
-            }}
-            style={{
-              fontFamily: "'DM Mono', monospace",
-              fontSize: 'clamp(0.78rem, 2vw, 0.9rem)', color: 'rgba(255,255,255,0.45)',
-              letterSpacing: '0.12em', textDecoration: 'none',
-              borderBottom: '1px solid rgba(255,255,255,0.15)', paddingBottom: 2,
-              transition: 'color 0.2s, border-color 0.2s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#ffffff'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.6)' }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
-          >
-            See my work ↓
-          </a>
+          <div style={{
+            fontFamily: "'DM Mono', monospace",
+            fontSize: '0.67rem', letterSpacing: '0.2em',
+            color: isDark ? 'rgba(242,240,235,0.50)' : 'rgba(13,13,13,0.55)',
+            textTransform: 'uppercase',
+          }}>
+            Current discipline
+          </div>
         </div>
 
-        {/* Scroll hint */}
+        {/* ─ RIGHT BOTTOM: Info grid ─ */}
         <div style={{
-          position: 'absolute', bottom: '2.2rem', left: '50%',
-          transform: 'translateX(-50%)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-          animation: 'heroFadeUp 0.8s 1s cubic-bezier(0.16,1,0.3,1) both',
+          gridColumn: '2',
+          gridRow: '2',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gridTemplateRows: '1fr 1fr',
+          animation: 'fadeUp 0.9s 0.45s cubic-bezier(0.16,1,0.3,1) both',
+        }}>
+          {/* Cell: Location */}
+          <InfoCell
+            label="BASED IN"
+            value="Pililla, Rizal"
+            sub="Philippines 🇵🇭"
+            border={border} muted={muted} fg={fg} acc={acc} accText={accText}
+            pos="tl"
+          />
+          {/* Cell: Clock */}
+          <InfoCell
+            label="LOCAL TIME"
+            value={phTime}
+            sub="Asia / Manila"
+            border={border} muted={muted} fg={fg} acc={acc} accText={accText}
+            pos="tr" mono
+          />
+          {/* Cell: Stack */}
+          <InfoCell
+            label="CORE STACK"
+            value="React · PHP · ESP32"
+            sub="+ IoT / Mobile / SQL"
+            border={border} muted={muted} fg={fg} acc={acc} accText={accText}
+            pos="bl"
+          />
+          {/* Cell: Status */}
+          <InfoCell
+            label="STATUS"
+            value="Open to Remote"
+            sub="IT Specialist @ JJC Eng."
+            border={border} muted={muted} fg={fg} acc={acc} accText={accText}
+            pos="br"
+          />
+        </div>
+      </div>
+
+      {/* ── Bottom strip ── */}
+      <div style={{
+        position: 'relative', zIndex: 10,
+        borderTop: `0.5px solid ${border}`,
+        padding: '0.85rem 2rem',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        animation: 'slideUp 0.7s 0.6s cubic-bezier(0.16,1,0.3,1) both',
+      }}>
+        <div style={{
+          display: 'flex', gap: '2rem', alignItems: 'center',
+        }}>
+          {['GitHub', 'LinkedIn', 'Email'].map((link, i) => (
+            <a key={i} href="#" style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: '0.64rem', letterSpacing: '0.18em',
+              color: isDark ? 'rgba(242,240,235,0.50)' : 'rgba(13,13,13,0.60)',
+              textDecoration: 'none', textTransform: 'uppercase',
+              transition: 'color 0.2s',
+            }}
+              onMouseEnter={e => e.currentTarget.style.color = acc}
+              onMouseLeave={e => e.currentTarget.style.color = muted}
+            >
+              {link}
+            </a>
+          ))}
+        </div>
+
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          animation: 'scrollBounce 2.5s ease-in-out 1.2s infinite',
         }}>
           <span style={{
             fontFamily: "'DM Mono', monospace",
-            fontSize: '0.65rem', letterSpacing: '0.2em',
-            color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase',
-          }}>Scroll</span>
+            fontSize: '0.62rem', letterSpacing: '0.2em',
+            color: isDark ? 'rgba(242,240,235,0.45)' : 'rgba(13,13,13,0.55)',
+            textTransform: 'uppercase',
+          }}>
+            Scroll
+          </span>
           <div style={{
-            width: 1, height: 36,
-            background: 'rgba(255,255,255,0.25)',
-            animation: 'heroScrollLine 2s ease-in-out infinite',
+            width: 0, height: 0,
+            borderLeft: '4px solid transparent',
+            borderRight: '4px solid transparent',
+            borderTop: `6px solid ${isDark ? 'rgba(242,240,235,0.45)' : 'rgba(13,13,13,0.55)'}`,
           }} />
         </div>
       </div>
 
+      {/* ── Accent corner decoration ── */}
+      <div aria-hidden="true" style={{
+        position: 'absolute',
+        bottom: 50, left: 'calc(50% - 1px)',
+        width: 1, height: '30vh',
+        background: `linear-gradient(to bottom, ${border}, transparent)`,
+        zIndex: 3,
+        pointerEvents: 'none',
+      }} />
+
       <style>{`
-        @keyframes ejPulse     { 0%,100%{opacity:1} 50%{opacity:0.35} }
-        @keyframes ejBlink     { 0%,100%{opacity:1} 50%{opacity:0} }
-        @keyframes heroSlideDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes heroFadeUp    { from{opacity:0;transform:translateY(30px)}  to{opacity:1;transform:translateY(0)} }
-        @keyframes heroFloat     { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-18px) scale(1.02)} }
-        @keyframes heroScrollLine{ 0%,100%{transform:scaleY(1);opacity:0.4} 50%{transform:scaleY(0.5);opacity:0.1} }
-        @keyframes letterFall    { 0%{opacity:0;transform:translateY(-20px)} 100%{opacity:1;transform:translateY(0)} }
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+        @keyframes slideDown   { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes slideUp     { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes fadeUp      { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes riseUp      { from{opacity:0;transform:translateY(60px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes pulse       { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(0.85)} }
+        @keyframes blink       { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes ghostDrift  { from{transform:translateY(0) rotate(-1deg)} to{transform:translateY(-30px) rotate(1deg)} }
+        @keyframes scrollBounce{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(5px)} }
+
+        @media (max-width: 768px) {
+          section > div:nth-of-type(2) {
+            grid-template-columns: 1fr !important;
+            grid-template-rows: auto !important;
+          }
+        }
       `}</style>
     </section>
+  )
+}
+
+/* ── Info cell sub-component ── */
+function InfoCell({ label, value, sub, border, muted, fg, acc, accText, pos, mono }) {
+  const isRight = pos?.includes('r')
+  const isBottom = pos?.includes('b')
+  return (
+    <div style={{
+      padding: 'clamp(1.2rem, 2.5vw, 2rem) clamp(1.2rem, 2.5vw, 2rem)',
+      borderTop: isBottom ? `0.5px solid ${border}` : 'none',
+      borderLeft: isRight ? `0.5px solid ${border}` : 'none',
+      display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+      transition: 'background 0.2s',
+    }}
+      onMouseEnter={e => e.currentTarget.style.background = `rgba(200,255,0,0.04)`}
+      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+    >
+      <div style={{
+        fontFamily: "'DM Mono', monospace",
+        fontSize: '0.58rem', letterSpacing: '0.22em',
+        color: accText, textTransform: 'uppercase',
+        marginBottom: '0.5rem',
+      }}>
+        {label}
+      </div>
+      <div style={{
+        fontFamily: mono ? "'DM Mono', monospace" : "'DM Sans', sans-serif",
+        fontSize: mono ? 'clamp(0.85rem, 1.5vw, 1.1rem)' : 'clamp(0.9rem, 1.8vw, 1.25rem)',
+        fontWeight: 600,
+        color: fg,
+        lineHeight: 1.2,
+        letterSpacing: mono ? '0.05em' : 0,
+        marginBottom: '0.2rem',
+        whiteSpace: mono ? 'nowrap' : 'normal',
+      }}>
+        {value}
+      </div>
+      <div style={{
+        fontFamily: "'DM Mono', monospace",
+        fontSize: '0.64rem', letterSpacing: '0.1em',
+        color: muted,
+        opacity: 1,
+      }}>
+        {sub}
+      </div>
+    </div>
   )
 }
