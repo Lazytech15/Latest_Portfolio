@@ -60,8 +60,7 @@ export default function Contact() {
       const res = await fetch(`${WORKER_URL}/api/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-        source: 'Portfolio — eablao.dev',
+        body: JSON.stringify({ ...form, source: 'Portfolio — eablao.dev' }),
       })
 
       const data = await res.json()
