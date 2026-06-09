@@ -94,9 +94,9 @@ function LoadingScreen({ onDone }) {
   if (phase === 'done') return null
 
   const ROWS = [
-    { ref: row1Ref, words: ['FEEL', '·', 'THE', '·', 'BEAT', '·', 'FEEL', '·', 'THE', '·', 'BEAT', '·'],         colors: ['light','accent','light','muted','accent','muted','light','accent','light','muted','accent','muted'] },
+    { ref: row1Ref, words: ['EMMANUEL', '·', 'ABLAO', '·', 'DEV', '·', 'EMMANUEL', '·', 'ABLAO', '·', 'DEV', '·'],         colors: ['light','accent','light','muted','accent','muted','light','accent','light','muted','accent','muted'] },
     { ref: row2Ref, words: ['LOADING', '·', 'LOADING', '·', 'LOADING', '·', 'LOADING', '·', 'LOADING', '·'],       colors: ['dim','muted','dim','muted','dim','muted','dim','muted','dim','muted'] },
-    { ref: row3Ref, words: ['CROSSING', '·', 'TEXT', '·', 'CROSSING', '·', 'TEXT', '·', 'CROSSING', '·', 'TEXT', '·'], colors: ['light','accent','dim','accent','light','accent','dim','accent','light','accent','dim','accent'] },
+    { ref: row3Ref, words: ['IOT', '·', 'PHP', '·', 'FULLSTOCK', '·', 'DEVELOPER', '·', 'REACT', '·', 'TAILWIND', '·'], colors: ['light','accent','dim','accent','light','accent','dim','accent','light','accent','dim','accent'] },
   ]
 
   return (

@@ -2,13 +2,18 @@ import { useEffect, useRef, useState } from 'react'
 import logo_nobackground from '../../public/ed_logo_noBackground.png'
 import { useDarkMode } from '../DarkModeContext'
 
+// ← Set this to your deployed worker URL after running `npx wrangler deploy`
+const WORKER_URL = 'https://sendtouchemail.eablao.workers.dev'
+
 export default function Contact() {
   const sectionRef = useRef(null)
   const { isDark } = useDarkMode()
   const [form, setForm] = useState({ name: '', email: '', message: '' })
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  /* ── DARK section (same slot as original) ── */
+  /* ── colors (unchanged) ── */
   const bg           = isDark ? '#1a1a1a' : '#0a0a0a'
   const fg           = '#f2f0eb'
   const acc          = '#c8ff00'
@@ -36,9 +41,41 @@ export default function Contact() {
     return () => observer.disconnect()
   }, [])
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    setSubmitted(true)
+  const handleSubmit = async (e) => {
+    e.preventDefault?.()
+    setError('')
+
+    // Client-side validation
+    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
+      setError('Please fill in all fields.')
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      setError('Please enter a valid email address.')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const res = await fetch(`${WORKER_URL}/api/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Something went wrong.')
+      }
+
+      setSubmitted(true)
+      setForm({ name: '', email: '', message: '' })
+    } catch (err) {
+      setError(err.message || 'Failed to send. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -239,6 +276,7 @@ export default function Contact() {
                       value={form[field.key]}
                       onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
                       className="field-input"
+                      disabled={loading}
                     />
                   </div>
                 ))}
@@ -258,28 +296,47 @@ export default function Contact() {
                     onChange={(e) => setForm({ ...form, message: e.target.value })}
                     className="field-input"
                     style={{ resize: 'none' }}
+                    disabled={loading}
                   />
                 </div>
+
+                {/* Error message */}
+                {error && (
+                  <p style={{
+                    fontFamily: "'DM Mono', monospace",
+                    fontSize: '0.72rem', color: '#ff6b6b',
+                    margin: 0, letterSpacing: '0.05em',
+                  }}>
+                    ⚠ {error}
+                  </p>
+                )}
+
                 <div>
                   <button
                     onClick={handleSubmit}
+                    disabled={loading}
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: 8,
-                      background: acc, color: '#0d0d0d',
+                      background: loading ? 'rgba(200,255,0,0.5)' : acc,
+                      color: '#0d0d0d',
                       fontFamily: "'DM Mono', monospace",
                       fontSize: '0.75rem', fontWeight: 700,
                       letterSpacing: '0.15em', textTransform: 'uppercase',
-                      padding: '14px 32px', border: 'none', cursor: 'pointer',
+                      padding: '14px 32px', border: 'none',
+                      cursor: loading ? 'not-allowed' : 'pointer',
                       transition: 'transform 0.18s, box-shadow 0.18s',
+                      opacity: loading ? 0.7 : 1,
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-3px,-3px)'; e.currentTarget.style.boxShadow = `4px 4px 0 ${fg}` }}
+                    onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = 'translate(-3px,-3px)'; e.currentTarget.style.boxShadow = `4px 4px 0 ${fg}` }}}
                     onMouseLeave={e => { e.currentTarget.style.transform = 'translate(0,0)'; e.currentTarget.style.boxShadow = 'none' }}
                   >
-                    Send Message
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <line x1="22" y1="2" x2="11" y2="13" />
-                      <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                    </svg>
+                    {loading ? 'Sending...' : 'Send Message'}
+                    {!loading && (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <line x1="22" y1="2" x2="11" y2="13" />
+                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                      </svg>
+                    )}
                   </button>
                 </div>
               </div>

@@ -36,8 +36,8 @@ const StockMasterPro = {
   ],
 
   links: {
-    github: 'https://github.com/Lazytech15/INVENTORYCONTROL.git',
-    live: 'https://invetorycontrol.emmanuelablao16.workers.dev',
+    github: 'https://github.com/Lazytech15/INVENTORYCONTROL',
+    live: 'https://invetorycontrol.eablao.workers.dev/',
   },
 
   // ─── Mock Data for Live Demo ──────────────────────────────────────────────
