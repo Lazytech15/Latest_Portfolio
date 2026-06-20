@@ -3,6 +3,7 @@ import Hero from './components/Hero'
 import About from './components/About'
 import Skills from './components/Skills'
 import Projects from './components/Projects'
+import Resume from './components/Resume'
 import Contact from './components/Contact'
 import { useDarkMode } from './DarkModeContext'
 
@@ -628,7 +629,8 @@ const SECTIONS_BASE = [
   { id: 'about',    label: 'About',    number: '01', lightBg: '#f5f3ee', darkBg: '#222222', lightTabBg: '#eceae4', darkTabBg: '#2a2a2a', isDarkSection: false },
   { id: 'skills',   label: 'Skills',   number: '02', lightBg: '#0a0a0a', darkBg: '#1a1a1a', lightTabBg: '#161616', darkTabBg: '#222222', isDarkSection: true },
   { id: 'projects', label: 'Projects', number: '03', lightBg: '#f5f3ee', darkBg: '#222222', lightTabBg: '#eceae4', darkTabBg: '#2a2a2a', isDarkSection: false },
-  { id: 'contact',  label: 'Contact',  number: '04', lightBg: '#0a0a0a', darkBg: '#1a1a1a', lightTabBg: '#161616', darkTabBg: '#222222', isDarkSection: true },
+  { id: 'resume',   label: 'Resume',   number: '04', lightBg: '#0a0a0a', darkBg: '#1a1a1a', lightTabBg: '#161616', darkTabBg: '#222222', isDarkSection: true },
+  { id: 'contact',  label: 'Contact',  number: '05', lightBg: '#0a0a0a', darkBg: '#1a1a1a', lightTabBg: '#161616', darkTabBg: '#222222', isDarkSection: true },
 ]
 
 // ─── Vertical Right Nav ────────────────────────────────────────────────────────
@@ -1062,6 +1064,7 @@ const handleBack = useCallback(() => {
     <About />,
     <Skills />,
     <Projects onOpenProject={handleOpenProject} />,
+    <Resume />,
     <Contact />,
   ]
 

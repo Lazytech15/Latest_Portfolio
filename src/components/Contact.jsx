@@ -127,7 +127,7 @@ export default function Contact() {
             fontSize: '0.62rem', letterSpacing: '0.25em',
             color: accText, textTransform: 'uppercase',
           }}>
-            ↳ 04 / Contact
+            ↳ 05 / Contact
           </span>
           <div style={{ flex: 1, height: '0.5px', background: border }} />
         </div>
