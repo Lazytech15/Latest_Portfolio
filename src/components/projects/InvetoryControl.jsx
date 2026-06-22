@@ -1,6 +1,6 @@
 import inventorycontrol from '../../../public/project/inventorycontrol.png'
 
-const StockMasterPro = {
+const InventoryControl = {
   number: '002',
   category: 'Web App',
   title: 'Inventory Control',
@@ -37,7 +37,7 @@ const StockMasterPro = {
 
   links: {
     github: 'https://github.com/Lazytech15/INVENTORYCONTROL',
-    live: 'https://invetorycontrol.eablao.workers.dev/',
+    live: 'https://inventorycontrol.eablao.dev/',
   },
 
   // ─── Mock Data for Live Demo ──────────────────────────────────────────────
@@ -166,4 +166,4 @@ const StockMasterPro = {
   ],
 }
 
-export default StockMasterPro
+export default InventoryControl

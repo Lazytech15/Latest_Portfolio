@@ -986,8 +986,15 @@ const handleBack = useCallback(() => {
       const offsets = cardOffsets.current
       let active = 0
       offsets.forEach((offset, i) => {
-        if (scrollY >= offset) active = i
+        if (scrollY >= offset - 1) active = i  // 1px tolerance for sub-pixel rounding
       })
+      // The last section's offset sits exactly at the max scrollable position, so
+      // sub-pixel rounding between our JS-measured heights and the browser's actual
+      // layout can leave scrollY a hair short of it — the nav would then get stuck
+      // on the second-to-last item forever. Once we're at (or past) the bottom of
+      // the page, force the last section to be active regardless of offset math.
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight
+      if (scrollY >= maxScroll - 2) active = offsets.length - 1
       return active
     }
     const onScroll = () => setActiveIndex(getActive())

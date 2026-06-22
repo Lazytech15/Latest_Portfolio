@@ -2,10 +2,10 @@ import { useEffect, useRef } from 'react'
 import { useDarkMode } from '../DarkModeContext'
 
 import NFCAttendanceSystem from './projects/NFCAttendanceSystem'
-import StockMasterPro from './projects/StockMasterPro'
-import NeuralDesk from './projects/NeuralDesk'
+import InventoryControl from './projects/InvetoryControl'
+import EatAllPOS from './projects/EatAllPOS'
 import QuickTrackMobile from './projects/QuickTrackMobile'
-import AutoFlowEngine from './projects/AutoFlowEngine'
+import ERJSmartSolution from './projects/ERJSmartSolution'
 import VueSurLaMontagne from './projects/VueSurLaMontagne'
 
 import vuesurlamontagne from '../../public/project/vuesurlamontagne.png'
@@ -13,22 +13,23 @@ import inventorycontrol from '../../public/project/inventorycontrol.png'
 import quicktrack from '../../public/project/quicktrack.jpg'
 import nfcScanner from '../../public/project/nfcscanner.jpg'
 import eatall from '../../public/project/eatall.png'
+import erjsmartsolution from '../../public/project/erjsmartsolution.png'
 
 const projectImages = [
   nfcScanner,
   inventorycontrol,
   eatall,
   quicktrack,
-  eatall,
+  erjsmartsolution,
   vuesurlamontagne,
 ]
 
 const projects = [
   NFCAttendanceSystem,
-  StockMasterPro,
-  NeuralDesk,
+  InventoryControl,
+  EatAllPOS,
   QuickTrackMobile,
-  AutoFlowEngine,
+  ERJSmartSolution,
   VueSurLaMontagne,
 ]
 
