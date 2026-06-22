@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useDarkMode } from '../DarkModeContext'
 
 import NFCAttendanceSystem from './projects/NFCAttendanceSystem'
@@ -32,17 +32,17 @@ const projects = [
   VueSurLaMontagne,
 ]
 
-function PeekImage({ src, visible, mouseX, mouseY }) {
-  if (!src) return null
+// PeekImage: positioned via direct DOM ref to avoid setState on every mousemove
+function PeekImage({ peekRef }) {
   return (
-    <div style={{
+    <div ref={peekRef} style={{
       position: 'fixed',
-      left: mouseX + 32,
-      top: mouseY - 80,
+      left: 0,
+      top: 0,
       pointerEvents: 'none',
       zIndex: 9999,
-      opacity: visible ? 1 : 0,
-      transform: visible ? 'scale(1) translateY(0px)' : 'scale(0.92) translateY(8px)',
+      opacity: 0,
+      transform: 'scale(0.92) translateY(8px)',
       transition: 'opacity 0.22s cubic-bezier(0.22,1,0.36,1), transform 0.22s cubic-bezier(0.22,1,0.36,1)',
       willChange: 'transform, opacity',
     }}>
@@ -54,7 +54,7 @@ function PeekImage({ src, visible, mouseX, mouseY }) {
         border: '1px solid rgba(0,0,0,0.12)',
         background: '#f5f3ee',
       }}>
-        <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        <img data-peek-img alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
       </div>
     </div>
   )
@@ -74,13 +74,16 @@ export default function Projects({ onOpenProject }) {
   const border       = isDark ? 'rgba(163,230,53,0.12)' : 'rgba(0,0,0,0.10)'
   const borderStrong = isDark ? 'rgba(163,230,53,0.25)' : 'rgba(0,0,0,0.20)'
 
-  const [peekSrc, setPeekSrc] = useState(null)
-  const [peekVisible, setPeekVisible] = useState(false)
-  const [mouse, setMouse] = useState({ x: 0, y: 0 })
+  const peekRef = useRef(null)
 
+  // Mouse tracking via direct DOM — no setState so no re-renders on mousemove
   useEffect(() => {
-    const handleMouseMove = (e) => setMouse({ x: e.clientX, y: e.clientY })
-    window.addEventListener('mousemove', handleMouseMove)
+    const handleMouseMove = (e) => {
+      if (!peekRef.current) return
+      peekRef.current.style.left = (e.clientX + 32) + 'px'
+      peekRef.current.style.top  = (e.clientY - 80) + 'px'
+    }
+    window.addEventListener('mousemove', handleMouseMove, { passive: true })
     return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [])
 
@@ -117,7 +120,7 @@ export default function Projects({ onOpenProject }) {
         paddingBottom: 'clamp(4rem, 8vw, 7rem)',
       }}
     >
-      <PeekImage src={peekSrc} visible={peekVisible} mouseX={mouse.x} mouseY={mouse.y} />
+      <PeekImage peekRef={peekRef} />
 
       {/* Accent top rule */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: acc, zIndex: 10 }} />
@@ -192,8 +195,8 @@ export default function Projects({ onOpenProject }) {
             <div
               key={i}
               onClick={() => onOpenProject && onOpenProject(p)}
-              onMouseEnter={() => { if (projectImages[i]) { setPeekSrc(projectImages[i]); setPeekVisible(true) } }}
-              onMouseLeave={() => setPeekVisible(false)}
+              onMouseEnter={() => { if (peekRef.current && projectImages[i]) { peekRef.current.querySelector('[data-peek-img]').src = projectImages[i]; peekRef.current.style.opacity = '1'; peekRef.current.style.transform = 'scale(1) translateY(0px)' } }}
+              onMouseLeave={() => { if (peekRef.current) { peekRef.current.style.opacity = '0'; peekRef.current.style.transform = 'scale(0.92) translateY(8px)' } }}
               style={{
                 display: 'flex',
                 alignItems: 'center',

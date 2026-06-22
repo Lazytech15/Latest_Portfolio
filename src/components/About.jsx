@@ -127,7 +127,8 @@ export default function About() {
         {/* ── Main grid: LEFT = headline + bio + CTAs | RIGHT = Specialisms ── */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          // UPDATED: Using min() ensures it doesn't overflow on very small screens
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
           gap: 'clamp(2rem, 5vw, 5rem)',
           alignItems: 'start',
           marginBottom: 'clamp(3rem, 6vw, 5rem)',
@@ -331,7 +332,8 @@ export default function About() {
         {/* ── Stats row — full width at the bottom ── */}
         <div className="reveal reveal-d4" style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
+          // UPDATED: Allow items to stack on smaller screens instead of forcing 4 columns
+          gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
           gap: '1px',
           background: borderStrong,
           marginBottom: 'clamp(2.5rem, 5vw, 4rem)',
@@ -411,6 +413,13 @@ export default function About() {
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;600&family=DM+Mono:wght@400;500&display=swap');
+        
+        /* Optional: Add custom responsive utility classes here if needed */
+        @media (max-width: 768px) {
+          .hide-on-mobile {
+            display: none !important;
+          }
+        }
       `}</style>
     </section>
   )

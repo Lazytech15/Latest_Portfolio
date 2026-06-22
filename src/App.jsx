@@ -721,11 +721,13 @@ function VerticalNav({ activeIndex, onNavigate, scrolled, showBackToTop, section
 }
 
 // ─── Mobile Bottom Nav ─────────────────────────────────────────────────────────
+const NAV_ICONS = ['⌂', 'A', '✦', '◈', 'CV', '✉']
+
 function MobileBottomNav({ activeIndex, onNavigate, sections }) {
   return (
     <div style={{
       position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 6000,
-      background: 'rgba(10,10,10,0.92)', backdropFilter: 'blur(16px)',
+      background: 'rgba(10,10,10,0.95)', backdropFilter: 'blur(20px)',
       borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex',
       alignItems: 'stretch', paddingBottom: 'env(safe-area-inset-bottom)',
     }}>
@@ -735,17 +737,54 @@ function MobileBottomNav({ activeIndex, onNavigate, sections }) {
           <button key={section.id} onClick={() => onNavigate(i)} style={{
             flex: 1, background: 'none', border: 'none', cursor: 'pointer',
             display: 'flex', flexDirection: 'column', alignItems: 'center',
-            justifyContent: 'center', padding: '10px 4px 8px', gap: 3, position: 'relative',
+            justifyContent: 'center', padding: '8px 2px 6px', gap: 2,
+            position: 'relative', minWidth: 0,
+            WebkitTapHighlightColor: 'transparent',
           }}>
+            {/* Active indicator bar */}
             {isActive && (
-              <div style={{ position: 'absolute', top: 0, left: '20%', right: '20%', height: 2, background: '#00E5A0', borderRadius: '0 0 2px 2px' }} />
+              <div style={{
+                position: 'absolute', top: 0, left: '15%', right: '15%',
+                height: 2, background: '#00E5A0',
+                borderRadius: '0 0 2px 2px',
+              }} />
             )}
-            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.55rem', letterSpacing: '0.08em', color: isActive ? '#00E5A0' : 'rgba(255,255,255,0.3)', textTransform: 'uppercase', transition: 'color 0.2s ease' }}>
+            {/* Number badge */}
+            <span style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: '0.5rem',
+              letterSpacing: '0.06em',
+              color: isActive ? '#00E5A0' : 'rgba(255,255,255,0.25)',
+              textTransform: 'uppercase',
+              transition: 'color 0.2s ease',
+              lineHeight: 1,
+            }}>
               {section.number}
             </span>
-            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.06em', color: isActive ? '#f5f3ee' : 'rgba(255,255,255,0.35)', textTransform: 'uppercase', transition: 'color 0.2s ease' }}>
+            {/* Label — truncated to fit */}
+            <span style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: '0.58rem',
+              letterSpacing: '0.04em',
+              color: isActive ? '#f5f3ee' : 'rgba(255,255,255,0.3)',
+              textTransform: 'uppercase',
+              transition: 'color 0.2s ease',
+              lineHeight: 1,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              maxWidth: '100%',
+              paddingInline: 2,
+            }}>
               {section.label}
             </span>
+            {/* Active dot */}
+            {isActive && (
+              <div style={{
+                width: 3, height: 3, borderRadius: '50%',
+                background: '#00E5A0', opacity: 0.8,
+              }} />
+            )}
           </button>
         )
       })}
@@ -784,7 +823,9 @@ export default function App() {
   const rafId = useRef(null)
   const scrollRafId = useRef(null)
   const cardRefs = useRef([])
+  const runwayRefs = useRef([])
   const cardOffsets = useRef([])
+  const scrollUpCurrent = useRef([])  // lerped scrollUpY values per card
 
   const { isDark } = useDarkMode()
 
@@ -811,18 +852,61 @@ export default function App() {
   }, [])
 
   const setCardRef = (i) => (el) => { cardRefs.current[i] = el }
+  const setRunwayRef = (i) => (el) => { runwayRefs.current[i] = el }
+
+  const getSpacers = () => Array.from(document.querySelectorAll('[data-runway-spacer]'))
 
   const computeOffsets = useCallback(() => {
     let cumulative = 0
-    cardOffsets.current = cardRefs.current.map((card) => {
+    cardOffsets.current = cardRefs.current.map((card, i) => {
       const p = cumulative
       if (card) {
         const inner = card.querySelector('[data-card-inner]') || card
-        cumulative += inner.scrollHeight
+        const spacer = document.querySelector(`[data-runway-spacer="${i}"]`)
+        cumulative += inner.scrollHeight + (spacer ? spacer.offsetHeight : 0)
       }
       return p
     })
   }, [])
+
+  // ── Sync spacer heights so tall sections get full scroll runway ───────────────
+  useEffect(() => {
+    const syncHeights = () => {
+      cardRefs.current.forEach((card, i) => {
+        if (!card) return
+        const inner  = card.querySelector('[data-card-inner]') || card
+        const spacer = document.querySelector(`[data-runway-spacer="${i}"]`)
+        if (!spacer) return
+        const cardH = inner.scrollHeight
+        const vh    = window.innerHeight
+
+        // Strategy:
+        // - Cards TALLER than vh already give the user plenty of scroll time.
+        //   Just add enough spacer so any content below the fold is reachable.
+        // - Cards SHORTER than vh get a spacer so the user has time to read them
+        //   before the next card slides up (dwell = vh - cardH).
+        // This avoids the "Hero takes 3× scroll" problem on mobile where minHeight:100vh
+        // makes it tall already and extra spacer makes navigation feel broken.
+        let spacerH
+        if (cardH >= vh) {
+          // Tall card: spacer only covers the overflow (content below the fold)
+          spacerH = cardH - vh
+        } else {
+          // Short card: pad up to exactly one viewport of dwell time
+          spacerH = vh - cardH
+        }
+        spacer.style.height = `${Math.max(0, spacerH)}px`
+      })
+      computeOffsets()
+    }
+
+    const ro = new ResizeObserver(syncHeights)
+    cardRefs.current.forEach((card) => { if (card) ro.observe(card) })
+    window.addEventListener('resize', syncHeights)
+    syncHeights()
+
+    return () => { ro.disconnect(); window.removeEventListener('resize', syncHeights) }
+  }, [computeOffsets, loadingDone])
 
   const handleLoadingDone = useCallback(() => {
     setLoadingDone(true)
@@ -832,6 +916,7 @@ export default function App() {
   const navigateToSection = useCallback((index) => {
     computeOffsets()
     const offset = cardOffsets.current[index] ?? 0
+    setActiveIndex(index)   // update immediately so nav tab highlights right away
     window.scrollTo({ top: offset, behavior: 'smooth' })
   }, [computeOffsets])
 
@@ -894,14 +979,14 @@ const handleBack = useCallback(() => {
   useEffect(() => {
     if (!loadingDone) return
     const getActive = () => {
+      // Use pre-computed offsets + scrollY — no getBCR, and works correctly with sticky cards.
+      // A section is "active" once the user has scrolled to its offset.
+      // The last section whose offset is <= scrollY wins.
+      const scrollY = window.scrollY
+      const offsets = cardOffsets.current
       let active = 0
-      SECTIONS.forEach((section, i) => {
-        const el = section.id === 'hero'
-          ? cardRefs.current[0]?.querySelector('section') || cardRefs.current[0]
-          : document.getElementById(section.id)
-        if (!el) return
-        const top = el.getBoundingClientRect().top
-        if (top <= window.innerHeight * 0.55) active = i
+      offsets.forEach((offset, i) => {
+        if (scrollY >= offset) active = i
       })
       return active
     }
@@ -918,34 +1003,67 @@ const handleBack = useCallback(() => {
     const SCALE_STEP = 0.025
     const PEEK_GAP   = 8
 
+    // Cache card heights so the RAF loop never calls scrollHeight (forces reflow)
+    const cardHeights = []
+    const cacheHeights = () => {
+      cardRefs.current.forEach((card, i) => {
+        if (!card) return
+        const inner = card.querySelector('[data-card-inner]') || card
+        cardHeights[i] = inner.scrollHeight
+      })
+    }
+    cacheHeights()
+    const ro = new ResizeObserver(cacheHeights)
+    cardRefs.current.forEach(c => c && ro.observe(c))
+
     const updateCards = () => {
       const scrollY = window.scrollY
       const vh      = window.innerHeight
       const cards   = cardRefs.current
+      const offsets = cardOffsets.current
 
-      const stuckFlags = cards.map(card => {
-        if (!card) return false
-        return card.getBoundingClientRect().top <= 1
-      })
+      // Determine stuck state from scrollY + pre-computed offsets — zero getBCR calls
+      const stuckFlags = cards.map((_, i) => scrollY >= (offsets[i] ?? 0))
 
       cards.forEach((card, i) => {
         if (!card) return
-        const cardTop = card.getBoundingClientRect().top
+
         if (stuckFlags[i]) {
           let cardsAbove = 0
           for (let j = i + 1; j < cards.length; j++) {
             if (stuckFlags[j]) cardsAbove++
           }
+
+          // For tall cards (cardH > vh): scroll content up as user scrolls through spacer.
+          // For short cards (cardH <= vh): no scroll-up needed, content is fully visible.
+          const cardOffset  = offsets[i] ?? 0
+          const cardH       = cardHeights[i] || vh
+          const maxScrollUp = Math.max(0, cardH - vh)
+          let targetScrollUpY = 0
+          if (maxScrollUp > 0) {
+            // How far past the card's sticky point has the user scrolled?
+            const scrollPast  = Math.max(0, scrollY - cardOffset)
+            targetScrollUpY   = -Math.min(scrollPast, maxScrollUp)
+          }
+
+          // Lerp toward target
+          const prev   = scrollUpCurrent.current[i] ?? 0
+          const lerped = prev + (targetScrollUpY - prev) * 0.25
+          scrollUpCurrent.current[i] = lerped
+
           const scale      = Math.max(0.82, 1 - cardsAbove * SCALE_STEP)
           const peekY      = cardsAbove * PEEK_GAP
           const brightness = Math.max(0.5, 1 - cardsAbove * 0.07)
           const radius     = Math.min(cardsAbove * 12, 32)
-          card.style.transform    = `translateY(${peekY}px) scale(${scale})`
+          card.style.transform    = `translateY(${lerped + peekY}px) scale(${scale})`
           card.style.filter       = cardsAbove > 0 ? `brightness(${brightness})` : 'brightness(1)'
           card.style.borderRadius = i > 0 && cardsAbove > 0
             ? `${radius}px ${radius}px 32px 32px`
             : i > 0 ? '20px 20px 32px 32px' : '0'
         } else {
+          scrollUpCurrent.current[i] = 0
+          const cardOffset = offsets[i] ?? 0
+          const cardTop    = cardOffset - scrollY          // relative to viewport
           const progress   = Math.max(0, Math.min(1, 1 - cardTop / vh))
           const slideY     = (1 - progress) * 80
           const entryScale = 0.96 + progress * 0.04
@@ -955,26 +1073,34 @@ const handleBack = useCallback(() => {
         }
       })
 
+    }
+
+    // Scroll-driven React state updates — in a scroll listener, NOT the RAF loop.
+    // Calling setState 60x/sec inside RAF causes re-renders every frame = the jiggle.
+    const onScrollState = () => {
+      const scrollY = window.scrollY
       setShowBackToTop(scrollY > 300)
       setNavVisible(true)
       clearTimeout(navIdleTimer.current)
       navIdleTimer.current = setTimeout(() => setNavVisible(false), 2500)
     }
 
-    const onScroll = () => {
-      cancelAnimationFrame(scrollRafId.current)
-      scrollRafId.current = requestAnimationFrame(updateCards)
+    // RAF loop: only touches DOM directly via card.style — no React state
+    const loop = () => {
+      updateCards()
+      scrollRafId.current = requestAnimationFrame(loop)
     }
 
     const initTimer = setTimeout(() => {
-      updateCards()
-      window.addEventListener('scroll', onScroll, { passive: true })
+      loop()
+      window.addEventListener('scroll', onScrollState, { passive: true })
     }, 400)
 
     return () => {
+      ro.disconnect()
       clearTimeout(initTimer)
-      window.removeEventListener('scroll', onScroll)
       cancelAnimationFrame(scrollRafId.current)
+      window.removeEventListener('scroll', onScrollState)
     }
   }, [loadingDone])
 
@@ -1118,27 +1244,31 @@ const handleBack = useCallback(() => {
 
         <main style={{ paddingBottom: isTouchDevice ? 'calc(56px + env(safe-area-inset-bottom))' : 0 }} className="md:pb-0">
           {SECTIONS.map((section, i) => (
-            <div
-              key={section.id}
-              ref={setCardRef(i)}
-              data-stack-card={i}
-              style={{
-                position: 'sticky', top: 0, zIndex: 10 + i,
-                transformOrigin: 'top center',
-                willChange: 'transform, filter, border-radius',
-                overflow: 'visible',
-                borderRadius: i > 0 ? '20px 20px 32px 32px' : 0,
-              }}
-            >
-              {i > 0 && (
-                <FolderTab
-                  number={section.number} label={section.label}
-                  tabBg={section.tabBg} isDark={section.isDarkSection}
-                />
-              )}
-              <div data-card-inner style={{ overflow: 'hidden', borderRadius: 'inherit' }}>
-                {sectionComponents[i]}
+            <div key={section.id} ref={setRunwayRef(i)} style={{ display: 'contents' }}>
+              <div
+                ref={setCardRef(i)}
+                data-stack-card={i}
+                style={{
+                  position: 'sticky', top: 0, zIndex: 10 + i,
+                  transformOrigin: 'top center',
+                  willChange: 'transform, filter, border-radius',
+                  overflow: 'visible',
+                  borderRadius: i > 0 ? '20px 20px 32px 32px' : 0,
+                }}
+              >
+                {i > 0 && (
+                  <FolderTab
+                    number={section.number} label={section.label}
+                    tabBg={section.tabBg} isDark={section.isDarkSection}
+                  />
+                )}
+                <div data-card-inner style={{ overflow: 'clip', borderRadius: 'inherit' }}>
+                  {sectionComponents[i]}
+                </div>
               </div>
+              {/* Height spacer: gives this section extra scroll runway beyond its natural height,
+                  so tall sections (Resume, About) scroll through all content before the next card covers them */}
+              <div data-runway-spacer={i} style={{ display: 'block', pointerEvents: 'none', flexShrink: 0 }} />
             </div>
           ))}
         </main>
@@ -1160,7 +1290,7 @@ const handleBack = useCallback(() => {
         .cursor-blob.clicking { width: 14px; height: 14px; }
 
         [data-stack-card] {
-          transition: transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94), filter 0.28s ease, border-radius 0.35s ease;
+          transition: filter 0.28s ease, border-radius 0.35s ease;
         }
 
         .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.6s ease, transform 0.6s ease; }

@@ -249,7 +249,7 @@ export default function Hero() {
       <BouncingBall isDark={isDark} />
 
       {/* ── Large ghost watermark ── */}
-      <div aria-hidden="true" style={{
+      <div aria-hidden="true" className="hero-ghost-watermark" style={{
         position: 'absolute',
         right: '2%',
         top: '20%',
@@ -263,6 +263,8 @@ export default function Hero() {
         zIndex: 0,
         pointerEvents: 'none',
         animation: 'ghostDrift 14s ease-in-out infinite alternate',
+        maxWidth: '100%',
+        overflow: 'hidden',
       }}>
         DEV
       </div>
@@ -274,7 +276,7 @@ export default function Hero() {
       }} />
 
       {/* ── Top Bar ── */}
-      <nav style={{
+      <nav className="hero-navbar" style={{
         position: 'relative', zIndex: 10,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '1.4rem 2rem',
@@ -282,24 +284,25 @@ export default function Hero() {
         animation: 'slideDown 0.7s cubic-bezier(0.16,1,0.3,1) both',
       }}>
         {/* Logo + wordmark */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+        <div className="hero-logo-wrap" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', minWidth: 0 }}>
           <img src={logo_nobackground} alt="ESA Logo" style={{
-            height: 36, width: 'auto',
+            height: 36, width: 'auto', flexShrink: 0,
             filter: isDark ? 'brightness(1)' : 'brightness(0)',
           }} />
-          <span style={{
+          <span className="hero-wordmark" style={{
             fontFamily: "'DM Mono', monospace",
             fontSize: '0.8rem', letterSpacing: '0.18em',
             color: isDark ? 'rgba(242,240,235,0.55)' : 'rgba(13,13,13,0.65)',
             textTransform: 'uppercase',
+            whiteSpace: 'nowrap',
           }}>
             EABLAO.DEV
           </span>
         </div>
 
         {/* Status pill + toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{
+        <div className="hero-nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div className="hero-status-pill" style={{
             display: 'flex', alignItems: 'center', gap: 7,
             padding: '5px 12px',
             border: `0.5px solid ${borderStrong}`,
@@ -311,10 +314,11 @@ export default function Hero() {
               boxShadow: `0 0 8px ${acc}`,
               animation: 'pulse 2s ease-in-out infinite',
             }} />
-            <span style={{
+            <span className="hero-status-pill-text" style={{
               fontFamily: "'DM Mono', monospace",
               fontSize: '0.67rem', letterSpacing: '0.13em',
               color: isDark ? 'rgba(242,240,235,0.60)' : 'rgba(13,13,13,0.70)',
+              whiteSpace: 'nowrap',
             }}>
               AVAILABLE FOR WORK
             </span>
@@ -363,7 +367,7 @@ export default function Hero() {
       </nav>
 
       {/* ── Main grid ── */}
-      <div style={{
+      <div className="hero-main-grid" style={{
         flex: 1,
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
@@ -373,7 +377,7 @@ export default function Hero() {
       }}>
 
         {/* ─ LEFT COLUMN: Big stacked name + tagline ─ */}
-        <div style={{
+        <div className="hero-left-col" style={{
           gridColumn: '1',
           gridRow: '1 / 3',
           padding: 'clamp(2rem, 5vw, 5rem) clamp(1.5rem, 3vw, 3rem)',
@@ -500,7 +504,7 @@ export default function Hero() {
         </div>
 
         {/* ─ RIGHT TOP: Role typewriter + metadata grid ─ */}
-        <div style={{
+        <div className="hero-right-top" style={{
           gridColumn: '2',
           gridRow: '1',
           padding: 'clamp(2rem, 5vw, 5rem) clamp(1.5rem, 3vw, 3rem) 2rem',
@@ -509,6 +513,7 @@ export default function Hero() {
           justifyContent: 'flex-end',
           borderBottom: `0.5px solid ${border}`,
           animation: 'fadeUp 0.9s 0.3s cubic-bezier(0.16,1,0.3,1) both',
+          minWidth: 0,
         }}>
           {/* Discipline display */}
           <div style={{
@@ -518,6 +523,7 @@ export default function Hero() {
             letterSpacing: '0.02em',
             color: fg,
             marginBottom: '0.25rem',
+            wordBreak: 'break-word',
           }}>
             {roleText}
             <span style={{
@@ -541,13 +547,14 @@ export default function Hero() {
         </div>
 
         {/* ─ RIGHT BOTTOM: Info grid ─ */}
-        <div style={{
+        <div className="hero-info-grid" style={{
           gridColumn: '2',
           gridRow: '2',
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gridTemplateRows: '1fr 1fr',
           animation: 'fadeUp 0.9s 0.45s cubic-bezier(0.16,1,0.3,1) both',
+          minWidth: 0,
         }}>
           {/* Cell: Location */}
           <InfoCell
@@ -585,14 +592,14 @@ export default function Hero() {
       </div>
 
       {/* ── Bottom strip ── */}
-      <div style={{
+      <div className="hero-bottom-strip" style={{
         position: 'relative', zIndex: 10,
         borderTop: `0.5px solid ${border}`,
         padding: '0.85rem 2rem',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         animation: 'slideUp 0.7s 0.6s cubic-bezier(0.16,1,0.3,1) both',
       }}>
-        <div style={{
+        <div className="hero-social-links" style={{
           display: 'flex', gap: '2rem', alignItems: 'center',
         }}>
           {['GitHub', 'LinkedIn', 'Email'].map((link, i) => (
@@ -655,9 +662,69 @@ export default function Hero() {
         @keyframes scrollBounce{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(5px)} }
 
         @media (max-width: 768px) {
-          section > div:nth-of-type(2) {
+          .hero-main-grid {
             grid-template-columns: 1fr !important;
             grid-template-rows: auto !important;
+          }
+          .hero-left-col {
+            grid-column: 1 !important;
+            grid-row: auto !important;
+            border-right: none !important;
+            padding: 2.5rem 1.25rem 2rem !important;
+          }
+          .hero-right-top {
+            grid-column: 1 !important;
+            grid-row: auto !important;
+            padding: 1.75rem 1.25rem 1.5rem !important;
+          }
+          .hero-info-grid {
+            grid-column: 1 !important;
+            grid-row: auto !important;
+          }
+          .hero-ghost-watermark {
+            font-size: clamp(70px, 22vw, 140px) !important;
+            right: 4% !important;
+            top: 8% !important;
+          }
+          .hero-navbar {
+            padding: 1rem 1.25rem !important;
+            flex-wrap: wrap !important;
+            row-gap: 0.75rem !important;
+          }
+          .hero-wordmark {
+            font-size: 0.66rem !important;
+            letter-spacing: 0.1em !important;
+          }
+          .hero-nav-actions {
+            gap: 0.6rem !important;
+          }
+          .hero-status-pill {
+            padding: 5px 9px !important;
+          }
+          .hero-status-pill-text {
+            font-size: 0.56rem !important;
+            letter-spacing: 0.08em !important;
+          }
+          .hero-bottom-strip {
+            padding: 0.85rem 1.25rem !important;
+            flex-wrap: wrap !important;
+            gap: 0.75rem !important;
+          }
+          .hero-social-links {
+            gap: 1.1rem !important;
+          }
+        }
+
+        @media (max-width: 420px) {
+          .hero-status-pill-text {
+            display: none !important;
+          }
+          .hero-info-grid {
+            grid-template-columns: 1fr !important;
+            grid-template-rows: none !important;
+          }
+          .hero-info-grid > div {
+            border-left: none !important;
           }
         }
       `}</style>
@@ -676,6 +743,8 @@ function InfoCell({ label, value, sub, border, muted, fg, acc, accText, pos, mon
       borderLeft: isRight ? `0.5px solid ${border}` : 'none',
       display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
       transition: 'background 0.2s',
+      minWidth: 0,
+      overflow: 'hidden',
     }}
       onMouseEnter={e => e.currentTarget.style.background = `rgba(200,255,0,0.04)`}
       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -690,13 +759,15 @@ function InfoCell({ label, value, sub, border, muted, fg, acc, accText, pos, mon
       </div>
       <div style={{
         fontFamily: mono ? "'DM Mono', monospace" : "'DM Sans', sans-serif",
-        fontSize: mono ? 'clamp(0.85rem, 1.5vw, 1.1rem)' : 'clamp(0.9rem, 1.8vw, 1.25rem)',
+        fontSize: mono ? 'clamp(0.78rem, 1.5vw, 1.1rem)' : 'clamp(0.9rem, 1.8vw, 1.25rem)',
         fontWeight: 600,
         color: fg,
         lineHeight: 1.2,
         letterSpacing: mono ? '0.05em' : 0,
         marginBottom: '0.2rem',
         whiteSpace: mono ? 'nowrap' : 'normal',
+        overflow: mono ? 'hidden' : 'visible',
+        textOverflow: mono ? 'clip' : 'unset',
       }}>
         {value}
       </div>
