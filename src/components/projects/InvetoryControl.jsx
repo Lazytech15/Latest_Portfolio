@@ -1,4 +1,6 @@
-import inventorycontrol from '../../../public/project/inventorycontrol.png'
+import inventorycontrol from '../../../public/project/inventorycontrol/inventorycontrol.png'
+import inventorycontrol2 from '../../../public/project/inventorycontrol/inventorycontrol2.png'
+import inventorycontrol3 from '../../../public/project/inventorycontrol/inventorycontrol3.png'
 
 const InventoryControl = {
   number: '002',
@@ -7,7 +9,7 @@ const InventoryControl = {
   status: 'Shipped',
   year: '2026',
   role: 'Full Stack Developer',
-  image: inventorycontrol,
+  images: [inventorycontrol, inventorycontrol2, inventorycontrol3],
 
   description:
     'A fully client-side inventory management system built with React + Vite — featuring a responsive marketing landing page, modal-based authentication, real-time dashboards, role-based access control, automated low-stock alerts, and purchase order management. All state is managed in-browser with localStorage persistence, making it instantly deployable with zero backend dependencies.',

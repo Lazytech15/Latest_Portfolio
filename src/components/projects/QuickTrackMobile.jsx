@@ -1,4 +1,6 @@
-import quicktrack from '../../../public/project/quicktrack.jpg'
+import quicktrack from '../../../public/project/quicktrack/quicktrack.jpg'
+import quicktrack2 from '../../../public/project/quicktrack/quicktrack2.jpg'
+import quicktrack3 from '../../../public/project/quicktrack/quicktrack3.jpg'
 
 const QuickTrackMobile = {
   number: '004',
@@ -7,7 +9,7 @@ const QuickTrackMobile = {
   status: 'Shipped',
   year: '2026',
   role: 'Mobile Developer',
-  image: quicktrack,
+  images: [quicktrack, quicktrack2, quicktrack3],
 
   description:
     'Offline-first React Native app for field technicians to track, inspect, and report on equipment across iOS and Android.',

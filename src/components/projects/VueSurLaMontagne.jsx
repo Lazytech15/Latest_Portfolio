@@ -1,4 +1,7 @@
-import vuesurlamontagne from '../../../public/project/vuesurlamontagne.png'
+import vuesurlamontagne from '../../../public/project/hotel/vuesurlamontagne.png'
+import vuesurlamontagne2 from '../../../public/project/hotel/vuesurlamontagne2.png'
+import vuesurlamontagne3 from '../../../public/project/hotel/vuesurlamontagne3.png'
+
 
 const VueSurLaMontagne = {
   // ── Projects.jsx list row ──────────────────────────────────────────────────
@@ -54,11 +57,7 @@ const VueSurLaMontagne = {
     live:   'https://vuesurlamontagne.eablao.dev',
   },
 
-  // Optional preview image shown in the sticky left panel
-  // Import your screenshot at the top and assign it here, e.g.:
-  // import heroShot from '../../assets/projects/vue-hero.png'
-  // then: image: heroShot
-  image: vuesurlamontagne,
+    images: [vuesurlamontagne, vuesurlamontagne2, vuesurlamontagne3],
 }
 
 export default VueSurLaMontagne

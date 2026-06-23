@@ -8,12 +8,12 @@ import QuickTrackMobile from './projects/QuickTrackMobile'
 import ERJSmartSolution from './projects/ERJSmartSolution'
 import VueSurLaMontagne from './projects/VueSurLaMontagne'
 
-import vuesurlamontagne from '../../public/project/vuesurlamontagne.png'
-import inventorycontrol from '../../public/project/inventorycontrol.png'
-import quicktrack from '../../public/project/quicktrack.jpg'
+import vuesurlamontagne from '../../public/project/hotel/vuesurlamontagne.png'
+import inventorycontrol from '../../public/project/inventorycontrol/inventorycontrol.png'
+import quicktrack from '../../public/project/quicktrack/quicktrack.jpg'
 import nfcScanner from '../../public/project/nfcscanner.jpg'
-import eatall from '../../public/project/eatall.png'
-import erjsmartsolution from '../../public/project/erjsmartsolution.png'
+import eatall from '../../public/project/eatallpos/eatall2.png'
+import erjsmartsolution from '../../public/project/smartsolutions/erjsmartsolution.png'
 
 const projectImages = [
   nfcScanner,

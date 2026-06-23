@@ -1,13 +1,15 @@
-import erjsmartsolution from '../../../public/project/erjsmartsolution.png'
+import erjsmartsolution from '../../../public/project/smartsolutions/erjsmartsolution.png'
+import erjsmartsolution2 from '../../../public/project/smartsolutions/erjsmartsolution2.png'
+import erjsmartsolution3 from '../../../public/project/smartsolutions/erjsmartsolution3.png'
 
 const ERJSmartSolution = {
   number: '005',
   category: 'SaaS / HR Tech',
   title: 'ERJ Smart Solutions',
-  status: 'Ongoing',
+  status: 'In Progress',
   year: '2026',
   role: 'Creator & Developer',
-  image: erjsmartsolution,
+    images: [erjsmartsolution, erjsmartsolution2, erjsmartsolution3],
 
   description:
     'A subscription-based online attendance management system for Philippine SMEs and enterprises — covering employee management, shift scheduling, leave tracking, and real-time clock-in/out across web and mobile.',

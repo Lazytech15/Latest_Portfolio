@@ -1,13 +1,15 @@
-import eatall from '../../../public/project/eatall.png'
+import eatall from '../../../public/project/eatallpos/eatall.png'
+import eatall2 from '../../../public/project/eatallpos/eatall2.png'
+import eatall3 from '../../../public/project/eatallpos/eatall3.png'
 
 const EatAllPOS = {
   number: '003',
   category: 'Desktop',
   title: 'Eat-All POS',
-  status: 'In Progress',
+  status: 'Shipped',
   year: '2026',
   role: 'Solo Engineer',
-  image: eatall,
+  images: [eatall, eatall2, eatall3],
 
   description:
     'Electron-based point-of-sale desktop app for food businesses with offline-capable workflows, inventory management, and real-time sales analytics.',

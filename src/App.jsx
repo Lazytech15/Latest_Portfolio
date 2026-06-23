@@ -277,73 +277,73 @@ function ProjectTransitionScreen({ onPeakReached, onDone }) {
 }
 
 // ─── Project Page ──────────────────────────────────────────────────────────────
-
-// ─── Project Page ──────────────────────────────────────────────────────────────
 function ProjectPage({ project, onBack }) {
   const [mounted, setMounted] = useState(false)
+  const [activeImg, setActiveImg] = useState(0)
   const [imgExpanded, setImgExpanded] = useState(false)
 
-  useEffect(() => {
-    window.scrollTo({ top: 0 })
-    requestAnimationFrame(() => setMounted(true))
+  // Normalise: support both `images` array and legacy `image` single
+  const images = project.images
+    ? project.images
+    : project.image
+    ? [project.image]
+    : []
 
-    const onKey = (e) => {
-      if (e.key === 'Escape') {
-        if (imgExpanded) setImgExpanded(false)
-        else onBack()
-      }
+  const hasImages = images.length > 0
+
+useEffect(() => {
+  setActiveImg(0)
+  window.scrollTo({ top: 0 })
+  requestAnimationFrame(() => setMounted(true))
+}, [project])
+
+// Keyboard handling — safe to re-run on imgExpanded changes since it
+// no longer resets activeImg or scroll position.
+useEffect(() => {
+  const onKey = (e) => {
+    if (e.key === 'Escape') {
+      if (imgExpanded) setImgExpanded(false)
+      else onBack()
     }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [imgExpanded, onBack])
+    if (imgExpanded) return
+    if (e.key === 'ArrowRight') setActiveImg(i => Math.min(i + 1, images.length - 1))
+    if (e.key === 'ArrowLeft')  setActiveImg(i => Math.max(i - 1, 0))
+  }
+  window.addEventListener('keydown', onKey)
+  return () => window.removeEventListener('keydown', onKey)
+}, [imgExpanded, onBack, images.length])
 
-  return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#0d0d0d',
-      color: '#f5f3ee',
-      opacity: mounted ? 1 : 0,
-      transform: mounted ? 'translateY(0)' : 'translateY(24px)',
-      transition: 'opacity 0.65s cubic-bezier(0.22,1,0.36,1), transform 0.65s cubic-bezier(0.22,1,0.36,1)',
-    }}>
+return (
+  <div style={{
+    minHeight: '100vh',
+    background: '#0d0d0d',
+    color: '#f5f3ee',
+    opacity: mounted ? 1 : 0,
+    transform: mounted ? 'none' : 'translateY(24px)',
+    transition: 'opacity 0.65s cubic-bezier(0.22,1,0.36,1), transform 0.65s cubic-bezier(0.22,1,0.36,1)',
+  }}>
 
       {/* ── Sticky top bar ── */}
       <div style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        position: 'sticky', top: 0, zIndex: 100,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0.85rem clamp(1.25rem, 4vw, 3rem)',
-        background: 'rgba(13,13,13,0.88)',
-        backdropFilter: 'blur(14px)',
+        background: 'rgba(13,13,13,0.88)', backdropFilter: 'blur(14px)',
         borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}>
-        {/* Back button */}
         <button
-          data-hover
-          onClick={onBack}
+          data-hover onClick={onBack}
           style={{
             display: 'flex', alignItems: 'center', gap: '0.45rem',
             background: 'none', border: '1px solid rgba(255,255,255,0.12)',
             borderRadius: 100, padding: '7px 16px 7px 12px',
             color: 'rgba(255,255,255,0.65)',
             fontFamily: "'DM Mono', monospace", fontSize: '0.75rem',
-            letterSpacing: '0.08em', textTransform: 'uppercase',
-            cursor: 'none',
+            letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'none',
             transition: 'border-color 0.18s, color 0.18s, background 0.18s',
           }}
-          onMouseEnter={e => {
-            e.currentTarget.style.borderColor = '#C4FF0E'
-            e.currentTarget.style.color = '#C4FF0E'
-            e.currentTarget.style.background = 'rgba(196,255,14,0.06)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
-            e.currentTarget.style.color = 'rgba(255,255,255,0.65)'
-            e.currentTarget.style.background = 'none'
-          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = '#C4FF0E'; e.currentTarget.style.color = '#C4FF0E'; e.currentTarget.style.background = 'rgba(196,255,14,0.06)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(255,255,255,0.65)'; e.currentTarget.style.background = 'none' }}
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 5l-7 7 7 7" />
@@ -351,24 +351,16 @@ function ProjectPage({ project, onBack }) {
           Back
         </button>
 
-        {/* Project number + category */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{
-            fontFamily: "'DM Mono', monospace", fontSize: '0.65rem',
-            letterSpacing: '0.14em', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase',
-          }}>
+          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.65rem', letterSpacing: '0.14em', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase' }}>
             {project.number}
           </span>
           <span style={{ width: 1, height: 10, background: 'rgba(255,255,255,0.12)' }} />
-          <span style={{
-            fontFamily: "'DM Mono', monospace", fontSize: '0.65rem',
-            letterSpacing: '0.12em', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase',
-          }}>
+          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.65rem', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase' }}>
             {project.category}
           </span>
         </div>
 
-        {/* Status */}
         <span style={{
           fontFamily: "'DM Mono', monospace", fontSize: '0.65rem',
           color: project.status === 'Shipped' ? '#00b37a' : '#b38a00',
@@ -383,35 +375,36 @@ function ProjectPage({ project, onBack }) {
       <div style={{ maxWidth: 820, margin: '0 auto', padding: 'clamp(2rem, 4vw, 3.5rem) clamp(1.25rem, 4vw, 2rem) 5rem' }}>
 
         {/* ── Hero image ── */}
-        <div
-          onClick={() => project.image && setImgExpanded(true)}
-          style={{
-            position: 'relative',
-            width: '100%',
-            aspectRatio: '16 / 9',
-            borderRadius: 14,
-            overflow: 'hidden',
-            background: '#111',
-            cursor: project.image ? 'zoom-in' : 'default',
-            marginBottom: 'clamp(2rem, 4vw, 3rem)',
-            border: '1px solid rgba(255,255,255,0.07)',
-          }}
-        >
-          {project.image ? (
-            <>
+        {hasImages ? (
+          <div style={{ marginBottom: 'clamp(2rem, 4vw, 3rem)' }}>
+
+            {/* Main image */}
+            <div
+              onClick={() => setImgExpanded(true)}
+              style={{
+                position: 'relative', width: '100%', aspectRatio: '16 / 9',
+                borderRadius: images.length > 1 ? '14px 14px 0 0' : 14,
+                overflow: 'hidden', background: '#111',
+                cursor: 'zoom-in',
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderBottom: images.length > 1 ? 'none' : '1px solid rgba(255,255,255,0.07)',
+              }}
+            >
               <img
-                src={project.image}
-                alt={`${project.title} preview`}
+                key={activeImg}
+                src={images[activeImg]}
+                alt={`${project.title} screenshot ${activeImg + 1}`}
                 style={{
                   width: '100%', height: '100%',
-                  objectFit: 'cover', objectPosition: 'center',
-                  display: 'block',
+                  objectFit: 'cover', objectPosition: 'center', display: 'block',
+                  animation: 'imgFadeIn 0.25s ease forwards',
                 }}
               />
               <div style={{
                 position: 'absolute', inset: 0,
                 background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.45) 100%)',
               }} />
+
               {/* Expand hint */}
               <div style={{
                 position: 'absolute', bottom: 14, right: 14,
@@ -427,8 +420,105 @@ function ProjectPage({ project, onBack }) {
                   Tap to expand
                 </span>
               </div>
-            </>
-          ) : (
+
+              {/* Prev / Next arrows — only shown when multiple images */}
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={e => { e.stopPropagation(); setActiveImg(i => Math.max(i - 1, 0)) }}
+                    disabled={activeImg === 0}
+                    style={{
+                      position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+                      width: 34, height: 34, borderRadius: '50%',
+                      background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      color: activeImg === 0 ? 'rgba(255,255,255,0.2)' : '#f5f3ee',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: activeImg === 0 ? 'default' : 'pointer',
+                      transition: 'background 0.18s, color 0.18s',
+                    }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M15 18l-6-6 6-6"/>
+                    </svg>
+                  </button>
+                  <button
+                    onClick={e => { e.stopPropagation(); setActiveImg(i => Math.min(i + 1, images.length - 1)) }}
+                    disabled={activeImg === images.length - 1}
+                    style={{
+                      position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                      width: 34, height: 34, borderRadius: '50%',
+                      background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      color: activeImg === images.length - 1 ? 'rgba(255,255,255,0.2)' : '#f5f3ee',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: activeImg === images.length - 1 ? 'default' : 'pointer',
+                      transition: 'background 0.18s, color 0.18s',
+                    }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Thumbnail strip — only when multiple images */}
+            {images.length > 1 && (
+              <div style={{
+                display: 'flex', gap: 0,
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderTop: '1px solid rgba(255,255,255,0.04)',
+                borderRadius: '0 0 14px 14px',
+                overflow: 'hidden',
+                background: '#0d0d0d',
+              }}>
+                {images.map((img, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveImg(i)}
+                    style={{
+                      flex: 1, aspectRatio: '16/9',
+                      padding: 0, border: 'none',
+                      borderRight: i < images.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                      background: 'none', cursor: 'pointer',
+                      position: 'relative', overflow: 'hidden',
+                      outline: 'none',
+                      transition: 'opacity 0.18s',
+                    }}
+                  >
+                    <img
+                      src={img}
+                      alt={`Thumbnail ${i + 1}`}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                    {/* Active overlay */}
+                    <div style={{
+                      position: 'absolute', inset: 0,
+                      background: activeImg === i ? 'transparent' : 'rgba(0,0,0,0.5)',
+                      transition: 'background 0.2s',
+                    }} />
+                    {/* Active bottom bar */}
+                    {activeImg === i && (
+                      <div style={{
+                        position: 'absolute', bottom: 0, left: 0, right: 0,
+                        height: 2, background: '#C4FF0E',
+                      }} />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* No image fallback */
+          <div style={{
+            position: 'relative', width: '100%', aspectRatio: '16 / 9',
+            borderRadius: 14, overflow: 'hidden', background: '#111',
+            marginBottom: 'clamp(2rem, 4vw, 3rem)',
+            border: '1px solid rgba(255,255,255,0.07)',
+          }}>
             <div style={{
               width: '100%', height: '100%',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -438,32 +528,25 @@ function ProjectPage({ project, onBack }) {
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontSize: 'clamp(4rem, 10vw, 8rem)',
                 color: 'rgba(255,255,255,0.05)',
-                letterSpacing: '0.04em',
-                userSelect: 'none',
+                letterSpacing: '0.04em', userSelect: 'none',
               }}>
                 {project.number}
               </span>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* ── Title block ── */}
         <div style={{ marginBottom: '1.5rem' }}>
           <h1 style={{
             fontFamily: "'Bebas Neue', sans-serif",
             fontSize: 'clamp(2.8rem, 8vw, 5.5rem)',
-            lineHeight: 0.9,
-            color: '#f5f3ee',
-            letterSpacing: '0.01em',
-            margin: '0 0 0.85rem',
+            lineHeight: 0.9, color: '#f5f3ee',
+            letterSpacing: '0.01em', margin: '0 0 0.85rem',
           }}>
             {project.title}
           </h1>
-          <p style={{
-            fontWeight: 300, fontSize: '1rem',
-            color: 'rgba(255,255,255,0.45)', lineHeight: 1.7,
-            margin: 0,
-          }}>
+          <p style={{ fontWeight: 300, fontSize: '1rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.7, margin: 0 }}>
             {project.description}
           </p>
         </div>
@@ -472,8 +555,7 @@ function ProjectPage({ project, onBack }) {
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
           border: '1px solid rgba(255,255,255,0.07)',
-          borderRadius: 10, overflow: 'hidden',
-          marginBottom: '2.5rem',
+          borderRadius: 10, overflow: 'hidden', marginBottom: '2.5rem',
         }}>
           {[
             { label: 'Year',   value: project.year   },
@@ -495,8 +577,7 @@ function ProjectPage({ project, onBack }) {
           ))}
         </div>
 
-        {/* ── Divider label helper ── */}
-        {/* Overview */}
+        {/* ── Overview ── */}
         <div style={{ marginBottom: '2.5rem' }}>
           <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.16em', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', display: 'block', marginBottom: '1rem' }}>
             Overview
@@ -541,14 +622,13 @@ function ProjectPage({ project, onBack }) {
           </div>
         </div>
 
-        {/* ── Links / actions ── */}
+        {/* ── Links ── */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap',
           paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.06)',
         }}>
           <button
-            data-hover
-            onClick={onBack}
+            data-hover onClick={onBack}
             style={{
               display: 'flex', alignItems: 'center', gap: '0.5rem',
               background: '#C4FF0E', border: 'none', borderRadius: 100,
@@ -559,16 +639,8 @@ function ProjectPage({ project, onBack }) {
               boxShadow: '0 0 0 3px rgba(196,255,14,0.2), 0 4px 18px rgba(196,255,14,0.22)',
               transition: 'background 0.18s, box-shadow 0.18s, transform 0.18s',
             }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = '#d4ff3e'
-              e.currentTarget.style.boxShadow = '0 0 0 5px rgba(196,255,14,0.3), 0 6px 24px rgba(196,255,14,0.38)'
-              e.currentTarget.style.transform = 'translateX(-2px)'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = '#C4FF0E'
-              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(196,255,14,0.2), 0 4px 18px rgba(196,255,14,0.22)'
-              e.currentTarget.style.transform = 'translateX(0)'
-            }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#d4ff3e'; e.currentTarget.style.boxShadow = '0 0 0 5px rgba(196,255,14,0.3), 0 6px 24px rgba(196,255,14,0.38)'; e.currentTarget.style.transform = 'translateX(-2px)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = '#C4FF0E'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(196,255,14,0.2), 0 4px 18px rgba(196,255,14,0.22)'; e.currentTarget.style.transform = 'translateX(0)' }}
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 5l-7 7 7 7" />
@@ -592,24 +664,79 @@ function ProjectPage({ project, onBack }) {
       </div>
 
       {/* ── Lightbox ── */}
-      {imgExpanded && project.image && (
-        <div onClick={() => setImgExpanded(false)} style={{
-          position: 'fixed', inset: 0, zIndex: 99999,
-          background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(12px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem',
-        }}>
-          <img src={project.image} alt={project.title} style={{
-            maxWidth: '100%', maxHeight: '90vh', objectFit: 'contain',
-            borderRadius: 10, boxShadow: '0 40px 120px rgba(0,0,0,0.8)',
-            animation: 'lightboxIn 0.25s cubic-bezier(0.16,1,0.3,1) forwards',
-          }} />
-          <div style={{
-            position: 'absolute', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)',
-            fontFamily: "'DM Mono', monospace", fontSize: '0.65rem',
-            color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em', whiteSpace: 'nowrap',
-          }}>
-            Tap anywhere to close
-          </div>
+      {imgExpanded && hasImages && (
+        <div
+          onClick={() => setImgExpanded(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 99999,
+            background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(12px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem',
+          }}
+        >
+          <img
+            src={images[activeImg]}
+            alt={`${project.title} ${activeImg + 1}`}
+            style={{
+              maxWidth: '100%', maxHeight: '90vh', objectFit: 'contain',
+              borderRadius: 10, boxShadow: '0 40px 120px rgba(0,0,0,0.8)',
+              animation: 'lightboxIn 0.25s cubic-bezier(0.16,1,0.3,1) forwards',
+            }}
+          />
+
+          {/* Lightbox prev/next */}
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={e => { e.stopPropagation(); setActiveImg(i => Math.max(i - 1, 0)) }}
+                disabled={activeImg === 0}
+                style={{
+                  position: 'absolute', left: '1.5rem', top: '50%', transform: 'translateY(-50%)',
+                  width: 44, height: 44, borderRadius: '50%',
+                  background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.15)',
+                  color: activeImg === 0 ? 'rgba(255,255,255,0.2)' : '#f5f3ee',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: activeImg === 0 ? 'default' : 'pointer',
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 18l-6-6 6-6"/>
+                </svg>
+              </button>
+              <button
+                onClick={e => { e.stopPropagation(); setActiveImg(i => Math.min(i + 1, images.length - 1)) }}
+                disabled={activeImg === images.length - 1}
+                style={{
+                  position: 'absolute', right: '1.5rem', top: '50%', transform: 'translateY(-50%)',
+                  width: 44, height: 44, borderRadius: '50%',
+                  background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.15)',
+                  color: activeImg === images.length - 1 ? 'rgba(255,255,255,0.2)' : '#f5f3ee',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: activeImg === images.length - 1 ? 'default' : 'pointer',
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </button>
+              {/* Counter */}
+              <div style={{
+                position: 'absolute', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)',
+                fontFamily: "'DM Mono', monospace", fontSize: '0.65rem',
+                color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', whiteSpace: 'nowrap',
+              }}>
+                {activeImg + 1} / {images.length} · Tap anywhere to close
+              </div>
+            </>
+          )}
+          {images.length === 1 && (
+            <div style={{
+              position: 'absolute', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)',
+              fontFamily: "'DM Mono', monospace", fontSize: '0.65rem',
+              color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em', whiteSpace: 'nowrap',
+            }}>
+              Tap anywhere to close
+            </div>
+          )}
         </div>
       )}
 
@@ -617,6 +744,10 @@ function ProjectPage({ project, onBack }) {
         @keyframes lightboxIn {
           from { opacity: 0; transform: scale(0.94); }
           to   { opacity: 1; transform: scale(1); }
+        }
+        @keyframes imgFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
         }
       `}</style>
     </div>
