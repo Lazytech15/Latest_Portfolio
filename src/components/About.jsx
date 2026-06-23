@@ -185,7 +185,7 @@ export default function About() {
             </div>
 
             {/* CTAs */}
-            <div className="reveal reveal-d4" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: '2rem' }}>
+            {/* <div className="reveal reveal-d4" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: '2rem' }}>
               <a
                 href="https://github.com/Lazytech15"
                 target="_blank" rel="noopener noreferrer"
@@ -222,7 +222,7 @@ export default function About() {
               >
                 LinkedIn ↗
               </a>
-            </div>
+            </div> */}
           </div>
 
           {/* RIGHT: Specialisms accordion */}

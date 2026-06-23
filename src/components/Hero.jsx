@@ -602,8 +602,12 @@ export default function Hero() {
         <div className="hero-social-links" style={{
           display: 'flex', gap: '2rem', alignItems: 'center',
         }}>
-          {['GitHub', 'LinkedIn', 'Email'].map((link, i) => (
-            <a key={i} href="#" style={{
+          {[
+            { label: 'GitHub', href: 'https://github.com/Lazytech15' },
+            { label: 'LinkedIn', href: 'https://www.linkedin.com/in/emmanuel-ablao-06713b308' },
+            { label: 'Email', href: 'mailto:emmanuelablao16@gmail.com' },
+          ].map((item, i) => (
+            <a key={i} href={item.href} target="_blank" rel="noreferrer noopener" style={{
               fontFamily: "'DM Mono', monospace",
               fontSize: '0.64rem', letterSpacing: '0.18em',
               color: isDark ? 'rgba(242,240,235,0.50)' : 'rgba(13,13,13,0.60)',
@@ -613,7 +617,7 @@ export default function Hero() {
               onMouseEnter={e => e.currentTarget.style.color = acc}
               onMouseLeave={e => e.currentTarget.style.color = muted}
             >
-              {link}
+              {item.label}
             </a>
           ))}
         </div>
