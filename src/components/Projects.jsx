@@ -11,11 +11,11 @@ import LetsPlaySong from './projects/LetsPlaySong'
 
 import vuesurlamontagne from '../../public/project/hotel/vuesurlamontagne.png'
 import inventorycontrol from '../../public/project/inventorycontrol/inventorycontrol.png'
-import quicktrack from '../../public/project/quicktrack/quicktrack.jpg'
+import quicktrack from '../../public/project/quicktrack/quicktrack.png'
 import nfcScanner from '../../public/project/nfcscanner.jpg'
 import eatall from '../../public/project/eatallpos/eatall2.png'
 import erjsmartsolution from '../../public/project/smartsolutions/erjsmartsolution.png'
-import letsplaysong from '../../public/project/letsplaysong/letsplaysong.jpg'
+import letsplaysong from '../../public/project/letsplaysong/letsplaysong.png'
 
 const projectImages = [
   nfcScanner,
@@ -64,6 +64,8 @@ function PeekImage({ peekRef }) {
     </div>
   )
 }
+
+export const projectsList = projects
 
 export default function Projects({ onOpenProject }) {
   const sectionRef = useRef(null)
@@ -195,13 +197,33 @@ export default function Projects({ onOpenProject }) {
         </p>
 
         {/* Project list */}
-        <div className="reveal reveal-d3" style={{ borderTop: `0.5px solid ${border}` }}>
+        <div style={{ borderTop: `0.5px solid ${border}` }}>
           {projects.map((p, i) => (
             <div
               key={i}
+              className="project-row reveal"
               onClick={() => onOpenProject && onOpenProject(p)}
-              onMouseEnter={() => { if (peekRef.current && projectImages[i]) { peekRef.current.querySelector('[data-peek-img]').src = projectImages[i]; peekRef.current.style.opacity = '1'; peekRef.current.style.transform = 'scale(1) translateY(0px)' } }}
-              onMouseLeave={() => { if (peekRef.current) { peekRef.current.style.opacity = '0'; peekRef.current.style.transform = 'scale(0.92) translateY(8px)' } }}
+              onMouseEnter={(e) => {
+                if (peekRef.current && projectImages[i]) {
+                  peekRef.current.querySelector('[data-peek-img]').src = projectImages[i]
+                  peekRef.current.style.opacity = '1'
+                  peekRef.current.style.transform = 'scale(1) translateY(0px)'
+                }
+                e.currentTarget.style.transform = 'translateX(12px)'
+                e.currentTarget.style.borderBottomColor = borderStrong
+                const arrow = e.currentTarget.querySelector('[data-row-arrow]')
+                if (arrow) arrow.style.transform = 'translateX(6px)'
+              }}
+              onMouseLeave={(e) => {
+                if (peekRef.current) {
+                  peekRef.current.style.opacity = '0'
+                  peekRef.current.style.transform = 'scale(0.92) translateY(8px)'
+                }
+                e.currentTarget.style.transform = 'translateX(0)'
+                e.currentTarget.style.borderBottomColor = border
+                const arrow = e.currentTarget.querySelector('[data-row-arrow]')
+                if (arrow) arrow.style.transform = 'translateX(0)'
+              }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -210,10 +232,9 @@ export default function Projects({ onOpenProject }) {
                 borderBottom: `0.5px solid ${border}`,
                 cursor: 'pointer',
                 gap: '1rem',
-                transition: 'padding-left 0.3s cubic-bezier(0.16,1,0.3,1)',
+                willChange: 'transform',
+                transitionDelay: `${0.15 + i * 0.07}s`,
               }}
-              onMouseOver={e => e.currentTarget.style.paddingLeft = '1.5rem'}
-              onMouseOut={e => e.currentTarget.style.paddingLeft = '0'}
             >
               {/* Left: number + title */}
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '1.25rem', minWidth: 0, overflow: 'hidden' }}>
@@ -252,7 +273,14 @@ export default function Projects({ onOpenProject }) {
                   <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'currentColor', display: 'inline-block', flexShrink: 0 }} />
                   {p.status}
                 </span>
-                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.9rem', color: acc }}>→</span>
+                <span
+                  data-row-arrow
+                  style={{
+                    fontFamily: "'DM Mono', monospace", fontSize: '0.9rem', color: acc,
+                    display: 'inline-block',
+                    transition: 'transform 0.4s cubic-bezier(0.16,1,0.3,1)',
+                  }}
+                >→</span>
               </div>
             </div>
           ))}
@@ -279,6 +307,15 @@ export default function Projects({ onOpenProject }) {
           </a>
         </div>
       </div>
+
+      <style>{`
+        .project-row.visible {
+          transition: transform 0.45s cubic-bezier(0.16,1,0.3,1),
+                      border-color 0.35s ease,
+                      background-color 0.35s ease,
+                      opacity 0.9s cubic-bezier(0.16,1,0.3,1);
+        }
+      `}</style>
     </section>
   )
 }

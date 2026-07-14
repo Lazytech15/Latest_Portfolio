@@ -1,6 +1,6 @@
-import letsplaysong from '../../../public/project/letsplaysong/letsplaysong.jpg'
-import letsplaysong2 from '../../../public/project/letsplaysong/letsplaysong2.jpg'
-import letsplaysong3 from '../../../public/project/letsplaysong/letsplaysong3.jpg'
+import letsplaysong from '../../../public/project/letsplaysong/letsplaysong.png'
+import letsplaysong2 from '../../../public/project/letsplaysong/letsplaysong2.png'
+import letsplaysong3 from '../../../public/project/letsplaysong/letsplaysong3.png'
 
 const LetsPlaySong = {
   number: '007',

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import Hero from './components/Hero'
 import About from './components/About'
 import Skills from './components/Skills'
-import Projects from './components/Projects'
+import Projects, { projectsList } from './components/Projects'
 import Resume from './components/Resume'
 import Contact from './components/Contact'
 import { useDarkMode } from './DarkModeContext'
@@ -276,11 +276,22 @@ function ProjectTransitionScreen({ onPeakReached, onDone }) {
   )
 }
 
-// ─── Project Page ──────────────────────────────────────────────────────────────
+// ─── Project Page (Landing-page style tech showcase) ──────────────────────────
 function ProjectPage({ project, onBack }) {
+  const { isDark } = useDarkMode()
   const [mounted, setMounted] = useState(false)
   const [activeImg, setActiveImg] = useState(0)
   const [imgExpanded, setImgExpanded] = useState(false)
+  const [carouselHover, setCarouselHover] = useState(false)
+  const pageRef = useRef(null)
+
+  // Theme tokens — the whole detail page reads from these instead of
+  // hardcoded dark-only colors, so it now follows the site's dark-mode toggle.
+  const ink = (o) => isDark ? `rgba(255,255,255,${o})` : `rgba(10,10,10,${o})`
+  const text     = isDark ? '#f5f3ee' : '#0a0a0a'
+  const pageBg   = isDark ? '#0d0d0d' : '#f5f3ee'
+  const cardBg   = isDark ? '#161616' : '#ffffff'
+  const topBarBg = isDark ? 'rgba(13,13,13,0.88)' : 'rgba(245,243,238,0.88)'
 
   // Normalise: support both `images` array and legacy `image` single
   const images = project.images
@@ -291,59 +302,90 @@ function ProjectPage({ project, onBack }) {
 
   const hasImages = images.length > 0
 
-useEffect(() => {
-  setActiveImg(0)
-  window.scrollTo({ top: 0 })
-  requestAnimationFrame(() => setMounted(true))
-}, [project])
+  useEffect(() => {
+    setActiveImg(0)
+    window.scrollTo({ top: 0 })
+    requestAnimationFrame(() => setMounted(true))
+  }, [project])
 
-// Keyboard handling — safe to re-run on imgExpanded changes since it
-// no longer resets activeImg or scroll position.
-useEffect(() => {
-  const onKey = (e) => {
-    if (e.key === 'Escape') {
-      if (imgExpanded) setImgExpanded(false)
-      else onBack()
+  // Scroll-in reveal for this page's own sections. The site-wide reveal
+  // observer only scans elements present when it first runs, so a project
+  // page mounted later (after opening a project) needs its own observer.
+  useEffect(() => {
+    const container = pageRef.current
+    if (!container) return
+    const els = container.querySelectorAll('.reveal')
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) entry.target.classList.add('visible')
+        })
+      },
+      { threshold: 0.08, rootMargin: '0px 0px -60px 0px' }
+    )
+    els.forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [project])
+
+  // Keyboard handling — safe to re-run on imgExpanded changes since it
+  // no longer resets activeImg or scroll position.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        if (imgExpanded) setImgExpanded(false)
+        else onBack()
+      }
+      if (imgExpanded) return
+      if (e.key === 'ArrowRight') setActiveImg(i => Math.min(i + 1, images.length - 1))
+      if (e.key === 'ArrowLeft')  setActiveImg(i => Math.max(i - 1, 0))
     }
-    if (imgExpanded) return
-    if (e.key === 'ArrowRight') setActiveImg(i => Math.min(i + 1, images.length - 1))
-    if (e.key === 'ArrowLeft')  setActiveImg(i => Math.max(i - 1, 0))
-  }
-  window.addEventListener('keydown', onKey)
-  return () => window.removeEventListener('keydown', onKey)
-}, [imgExpanded, onBack, images.length])
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [imgExpanded, onBack, images.length])
 
-return (
-  <div style={{
-    minHeight: '100vh',
-    background: '#0d0d0d',
-    color: '#f5f3ee',
-    opacity: mounted ? 1 : 0,
-    transform: mounted ? 'none' : 'translateY(24px)',
-    transition: 'opacity 0.65s cubic-bezier(0.22,1,0.36,1), transform 0.65s cubic-bezier(0.22,1,0.36,1)',
-  }}>
+  // Auto-advance the hero coverflow carousel
+  useEffect(() => {
+    if (images.length <= 1 || imgExpanded || carouselHover) return
+    const id = setInterval(() => {
+      setActiveImg(i => (i + 1) % images.length)
+    }, 3200)
+    return () => clearInterval(id)
+  }, [images.length, imgExpanded, carouselHover, project])
+
+  const heroImg = hasImages ? images[activeImg] : null
+
+  return (
+    <div ref={pageRef} style={{
+      minHeight: '100vh',
+      background: pageBg,
+      color: text,
+      opacity: mounted ? 1 : 0,
+      transform: mounted ? 'none' : 'translateY(24px)',
+      transition: 'opacity 0.65s cubic-bezier(0.22,1,0.36,1), transform 0.65s cubic-bezier(0.22,1,0.36,1)',
+    }}>
 
       {/* ── Sticky top bar ── */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 100,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0.85rem clamp(1.25rem, 4vw, 3rem)',
-        background: 'rgba(13,13,13,0.88)', backdropFilter: 'blur(14px)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        background: topBarBg, backdropFilter: 'blur(14px)',
+        borderBottom: `1px solid ${ink(0.06)}`,
       }}>
         <button
           data-hover onClick={onBack}
           style={{
             display: 'flex', alignItems: 'center', gap: '0.45rem',
-            background: 'none', border: '1px solid rgba(255,255,255,0.12)',
+            background: cardBg, border: `1px solid ${ink(0.18)}`,
             borderRadius: 100, padding: '7px 16px 7px 12px',
-            color: 'rgba(255,255,255,0.65)',
+            color: text,
             fontFamily: "'DM Mono', monospace", fontSize: '0.75rem',
             letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'none',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
             transition: 'border-color 0.18s, color 0.18s, background 0.18s',
           }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = '#C4FF0E'; e.currentTarget.style.color = '#C4FF0E'; e.currentTarget.style.background = 'rgba(196,255,14,0.06)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(255,255,255,0.65)'; e.currentTarget.style.background = 'none' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = ink(0.18); e.currentTarget.style.color = text; e.currentTarget.style.background = cardBg }}
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 5l-7 7 7 7" />
@@ -352,11 +394,11 @@ return (
         </button>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.65rem', letterSpacing: '0.14em', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase' }}>
+          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.65rem', letterSpacing: '0.14em', color: ink(0.25), textTransform: 'uppercase' }}>
             {project.number}
           </span>
-          <span style={{ width: 1, height: 10, background: 'rgba(255,255,255,0.12)' }} />
-          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.65rem', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase' }}>
+          <span style={{ width: 1, height: 10, background: ink(0.12) }} />
+          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.65rem', letterSpacing: '0.12em', color: ink(0.25), textTransform: 'uppercase' }}>
             {project.category}
           </span>
         </div>
@@ -371,306 +413,410 @@ return (
         </span>
       </div>
 
-      {/* ── Scrollable content ── */}
-      <div style={{ maxWidth: 820, margin: '0 auto', padding: 'clamp(2rem, 4vw, 3.5rem) clamp(1.25rem, 4vw, 2rem) 5rem' }}>
+      {/* ══════════════════════════ HERO ══════════════════════════ */}
+      <section style={{
+        position: 'relative', overflow: 'hidden',
+        padding: 'clamp(2.5rem, 6vw, 5rem) clamp(1.25rem, 4vw, 3rem) clamp(3rem, 6vw, 5rem)',
+        borderBottom: `1px solid ${ink(0.06)}`,
+      }}>
+        {/* Ghost number watermark */}
+        <div aria-hidden="true" style={{
+          position: 'absolute', right: 'clamp(-2rem, -1vw, 1rem)', top: '-4%',
+          fontFamily: "'Bebas Neue', Impact, sans-serif",
+          fontSize: 'clamp(120px, 20vw, 280px)', lineHeight: 0.8,
+          color: 'transparent', WebkitTextStroke: `1px ${ink(0.05)}`,
+          userSelect: 'none', pointerEvents: 'none', zIndex: 0,
+        }}>
+          {project.number}
+        </div>
 
-        {/* ── Hero image ── */}
-        {hasImages ? (
-          <div style={{ marginBottom: 'clamp(2rem, 4vw, 3rem)' }}>
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: 1180, margin: '0 auto' }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.5rem',
+          }}>
+            <span style={{
+              fontFamily: "'DM Mono', monospace", fontSize: '0.68rem',
+              letterSpacing: '0.2em', color: '#C4FF0E', textTransform: 'uppercase',
+              border: '1px solid rgba(196,255,14,0.3)', borderRadius: 100,
+              padding: '5px 14px', background: 'rgba(196,255,14,0.06)',
+            }}>
+              {project.category}
+            </span>
+            <span style={{
+              fontFamily: "'DM Mono', monospace", fontSize: '0.65rem',
+              color: project.status === 'Shipped' ? '#00b37a' : '#b38a00',
+              display: 'flex', alignItems: 'center', gap: 5,
+            }}>
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'currentColor', display: 'inline-block' }} />
+              {project.status} · {project.year}
+            </span>
+          </div>
 
-            {/* Main image */}
+          <h1 style={{
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: 'clamp(3rem, 8.5vw, 7rem)',
+            lineHeight: 0.88, color: text,
+            letterSpacing: '0.01em', margin: '0 0 1.25rem', maxWidth: 920,
+          }}>
+            {project.title}
+          </h1>
+
+          <p style={{
+            fontWeight: 300, fontSize: 'clamp(1rem, 1.6vw, 1.3rem)',
+            color: ink(0.55), lineHeight: 1.6, margin: '0 0 2.25rem',
+            maxWidth: 640,
+          }}>
+            {project.description}
+          </p>
+
+          {/* Hero showcase — moving coverflow carousel through all project images */}
+          {heroImg ? (
             <div
-              onClick={() => setImgExpanded(true)}
+              onMouseEnter={() => setCarouselHover(true)}
+              onMouseLeave={() => setCarouselHover(false)}
               style={{
-                position: 'relative', width: '100%', aspectRatio: '16 / 9',
-                borderRadius: images.length > 1 ? '14px 14px 0 0' : 14,
-                overflow: 'hidden', background: '#111',
-                cursor: 'zoom-in',
-                border: '1px solid rgba(255,255,255,0.07)',
-                borderBottom: images.length > 1 ? 'none' : '1px solid rgba(255,255,255,0.07)',
+                position: 'relative', width: '100%',
+                height: 'clamp(360px, 50vw, 620px)',
+                margin: '0 auto',
               }}
             >
-              <img
-                key={activeImg}
-                src={images[activeImg]}
-                alt={`${project.title} screenshot ${activeImg + 1}`}
-                style={{
-                  width: '100%', height: '100%',
-                  objectFit: 'cover', objectPosition: 'center', display: 'block',
-                  animation: 'imgFadeIn 0.25s ease forwards',
-                }}
-              />
               <div style={{
-                position: 'absolute', inset: 0,
-                background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.45) 100%)',
-              }} />
-
-              {/* Expand hint */}
-              <div style={{
-                position: 'absolute', bottom: 14, right: 14,
-                display: 'flex', alignItems: 'center', gap: 6,
-                background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)',
-                border: '1px solid rgba(255,255,255,0.1)', borderRadius: 100,
-                padding: '5px 12px', whiteSpace: 'nowrap',
+                position: 'relative', width: '100%', height: '100%',
+                overflow: 'hidden', borderRadius: 16,
               }}>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2">
-                  <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
-                </svg>
-                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.6rem', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.08em' }}>
-                  Tap to expand
-                </span>
+                {images.map((img, i) => {
+                  let diff = i - activeImg
+                  const n = images.length
+                  if (diff > n / 2) diff -= n
+                  if (diff < -n / 2) diff += n
+                  const abs = Math.abs(diff)
+                  const isActive = diff === 0
+                  if (abs > 1) return null
+                  return (
+                    <div
+                      key={i}
+                      onClick={() => (isActive ? setImgExpanded(true) : setActiveImg(i))}
+                      style={{
+                        position: 'absolute', top: '50%', left: '50%',
+                        width: isActive ? '68%' : '48%',
+                        height: '100%',
+                        transform: `translate(-50%, -50%) translateX(${diff * 78}%) scale(${isActive ? 1 : 0.82})`,
+                        opacity: isActive ? 1 : 0.5,
+                        zIndex: isActive ? 5 : 2,
+                        borderRadius: 16, overflow: 'hidden',
+                        cursor: isActive ? 'zoom-in' : 'pointer',
+                        boxShadow: isActive ? '0 30px 90px rgba(0,0,0,0.5)' : '0 12px 32px rgba(0,0,0,0.3)',
+                        border: `1px solid ${ink(0.08)}`,
+                        background: cardBg,
+                        transition: 'transform 0.65s cubic-bezier(0.22,1,0.36,1), opacity 0.5s ease, width 0.65s cubic-bezier(0.22,1,0.36,1)',
+                        filter: isActive ? 'none' : 'brightness(0.55)',
+                      }}
+                    >
+                      <img
+                        src={img}
+                        alt={`${project.title} preview ${i + 1}`}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }}
+                      />
+                      {isActive && (
+                        <>
+                          <div style={{
+                            position: 'absolute', inset: 0, pointerEvents: 'none',
+                            background: 'linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.5) 100%)',
+                          }} />
+                          <div style={{
+                            position: 'absolute', bottom: 14, right: 14,
+                            display: 'flex', alignItems: 'center', gap: 6,
+                            background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)',
+                            border: '1px solid rgba(255,255,255,0.1)', borderRadius: 100,
+                            padding: '5px 12px', whiteSpace: 'nowrap', pointerEvents: 'none',
+                          }}>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2">
+                              <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                            </svg>
+                            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.6rem', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.08em' }}>
+                              Tap to expand
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
 
-              {/* Prev / Next arrows — only shown when multiple images */}
               {images.length > 1 && (
                 <>
                   <button
-                    onClick={e => { e.stopPropagation(); setActiveImg(i => Math.max(i - 1, 0)) }}
-                    disabled={activeImg === 0}
+                    data-hover
+                    onClick={() => setActiveImg(i => (i - 1 + images.length) % images.length)}
                     style={{
-                      position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
-                      width: 34, height: 34, borderRadius: '50%',
-                      background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)',
-                      border: '1px solid rgba(255,255,255,0.12)',
-                      color: activeImg === 0 ? 'rgba(255,255,255,0.2)' : '#f5f3ee',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      cursor: activeImg === 0 ? 'default' : 'pointer',
+                      position: 'absolute', left: '2%', top: '50%', transform: 'translateY(-50%)',
+                      width: 40, height: 40, borderRadius: '50%', zIndex: 10,
+                      background: cardBg, backdropFilter: 'blur(6px)',
+                      border: `1px solid ${ink(0.15)}`, color: text,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
                       transition: 'background 0.18s, color 0.18s',
                     }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#C4FF0E'; e.currentTarget.style.color = '#0a0a0a' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = cardBg; e.currentTarget.style.color = text }}
+                    aria-label="Previous image"
                   >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M15 18l-6-6 6-6"/>
                     </svg>
                   </button>
                   <button
-                    onClick={e => { e.stopPropagation(); setActiveImg(i => Math.min(i + 1, images.length - 1)) }}
-                    disabled={activeImg === images.length - 1}
+                    data-hover
+                    onClick={() => setActiveImg(i => (i + 1) % images.length)}
                     style={{
-                      position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-                      width: 34, height: 34, borderRadius: '50%',
-                      background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)',
-                      border: '1px solid rgba(255,255,255,0.12)',
-                      color: activeImg === images.length - 1 ? 'rgba(255,255,255,0.2)' : '#f5f3ee',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      cursor: activeImg === images.length - 1 ? 'default' : 'pointer',
+                      position: 'absolute', right: '2%', top: '50%', transform: 'translateY(-50%)',
+                      width: 40, height: 40, borderRadius: '50%', zIndex: 10,
+                      background: cardBg, backdropFilter: 'blur(6px)',
+                      border: `1px solid ${ink(0.15)}`, color: text,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
                       transition: 'background 0.18s, color 0.18s',
                     }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#C4FF0E'; e.currentTarget.style.color = '#0a0a0a' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = cardBg; e.currentTarget.style.color = text }}
+                    aria-label="Next image"
                   >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M9 18l6-6-6-6"/>
                     </svg>
                   </button>
                 </>
               )}
             </div>
-
-            {/* Thumbnail strip — only when multiple images */}
-            {images.length > 1 && (
-              <div style={{
-                display: 'flex', gap: 0,
-                border: '1px solid rgba(255,255,255,0.07)',
-                borderTop: '1px solid rgba(255,255,255,0.04)',
-                borderRadius: '0 0 14px 14px',
-                overflow: 'hidden',
-                background: '#0d0d0d',
-              }}>
-                {images.map((img, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActiveImg(i)}
-                    style={{
-                      flex: 1, aspectRatio: '16/9',
-                      padding: 0, border: 'none',
-                      borderRight: i < images.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
-                      background: 'none', cursor: 'pointer',
-                      position: 'relative', overflow: 'hidden',
-                      outline: 'none',
-                      transition: 'opacity 0.18s',
-                    }}
-                  >
-                    <img
-                      src={img}
-                      alt={`Thumbnail ${i + 1}`}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                    />
-                    {/* Active overlay */}
-                    <div style={{
-                      position: 'absolute', inset: 0,
-                      background: activeImg === i ? 'transparent' : 'rgba(0,0,0,0.5)',
-                      transition: 'background 0.2s',
-                    }} />
-                    {/* Active bottom bar */}
-                    {activeImg === i && (
-                      <div style={{
-                        position: 'absolute', bottom: 0, left: 0, right: 0,
-                        height: 2, background: '#C4FF0E',
-                      }} />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          /* No image fallback */
-          <div style={{
-            position: 'relative', width: '100%', aspectRatio: '16 / 9',
-            borderRadius: 14, overflow: 'hidden', background: '#111',
-            marginBottom: 'clamp(2rem, 4vw, 3rem)',
-            border: '1px solid rgba(255,255,255,0.07)',
-          }}>
+          ) : (
             <div style={{
-              width: '100%', height: '100%',
+              position: 'relative', width: '100%', aspectRatio: '21 / 10',
+              borderRadius: 16, overflow: 'hidden',
+              border: `1px solid ${ink(0.08)}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'repeating-linear-gradient(45deg, #111 0px, #111 10px, #0f0f0f 10px, #0f0f0f 20px)',
+              background: isDark
+                ? 'repeating-linear-gradient(45deg, #111 0px, #111 10px, #0f0f0f 10px, #0f0f0f 20px)'
+                : 'repeating-linear-gradient(45deg, #efeee8 0px, #efeee8 10px, #e6e4dc 10px, #e6e4dc 20px)',
             }}>
               <span style={{
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: 'clamp(4rem, 10vw, 8rem)',
-                color: 'rgba(255,255,255,0.05)',
-                letterSpacing: '0.04em', userSelect: 'none',
+                fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(4rem, 10vw, 8rem)',
+                color: ink(0.06), letterSpacing: '0.04em', userSelect: 'none',
               }}>
-                {project.number}
+                {project.title}
               </span>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* ── Title block ── */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h1 style={{
-            fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: 'clamp(2.8rem, 8vw, 5.5rem)',
-            lineHeight: 0.9, color: '#f5f3ee',
-            letterSpacing: '0.01em', margin: '0 0 0.85rem',
-          }}>
-            {project.title}
-          </h1>
-          <p style={{ fontWeight: 300, fontSize: '1rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.7, margin: 0 }}>
-            {project.description}
-          </p>
+          {/* Dot indicators */}
+          {images.length > 1 && (
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              marginTop: '1.1rem',
+            }}>
+              {images.map((_, i) => (
+                <button
+                  key={i}
+                  data-hover
+                  onClick={() => setActiveImg(i)}
+                  aria-label={`Go to image ${i + 1}`}
+                  style={{
+                    width: i === activeImg ? 20 : 7, height: 7, borderRadius: 100,
+                    background: i === activeImg ? '#C4FF0E' : ink(0.2),
+                    border: 'none', padding: 0, cursor: 'pointer',
+                    transition: 'width 0.25s cubic-bezier(0.16,1,0.3,1), background 0.2s ease',
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </div>
+      </section>
 
-        {/* ── Meta strip ── */}
+      {/* ══════════════════════════ CLOSING CTA (moved up, right below the carousel) ══════════════════════════ */}
+      <section className="reveal" style={{ padding: 'clamp(2rem, 4vw, 3rem) clamp(1.25rem, 4vw, 3rem) clamp(3rem, 6vw, 4.5rem)', borderBottom: `1px solid ${ink(0.06)}` }}>
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
-          border: '1px solid rgba(255,255,255,0.07)',
-          borderRadius: 10, overflow: 'hidden', marginBottom: '2.5rem',
+          maxWidth: 1180, margin: '0 auto',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '1.75rem',
+        }}>
+          <h2 style={{
+            fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2.2rem, 5.5vw, 4rem)',
+            lineHeight: 0.95, color: text, margin: 0, maxWidth: 700,
+          }}>
+            Curious how it was built?
+          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+            {project.links?.github && (
+              <a data-hover href={project.links.github} target="_blank" rel="noopener noreferrer"
+                className="btn btn-ghost" style={{ fontSize: '0.82rem', padding: '9px 20px' }}>
+                View on GitHub ↗
+              </a>
+            )}
+            {project.links?.live && (
+              <a data-hover href={project.links.live} target="_blank" rel="noopener noreferrer"
+                className="btn btn-fill" style={{ fontSize: '0.82rem', padding: '9px 20px' }}>
+                Live Demo ↗
+              </a>
+            )}
+            {project.links?.apk && (
+              <a data-hover href={project.links.apk} target="_blank" rel="noopener noreferrer" download
+                className="btn btn-ghost" style={{ fontSize: '0.82rem', padding: '9px 20px', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" />
+                </svg>
+                Download APK
+              </a>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════ STAT STRIP ══════════════════════════ */}
+      <section className="reveal" style={{ borderBottom: `1px solid ${ink(0.06)}`, background: ink(0.015) }}>
+        <div style={{
+          maxWidth: 1180, margin: '0 auto',
+          display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
         }}>
           {[
-            { label: 'Year',   value: project.year   },
-            { label: 'Role',   value: project.role   },
-            { label: 'Status', value: project.status },
+            { label: 'Role',        value: project.role },
+            { label: 'Year',        value: project.year },
+            { label: 'Stack Depth', value: `${project.tech.length} tools` },
+            { label: 'Status',      value: project.status },
           ].map((m, i) => (
             <div key={i} style={{
-              padding: '1rem 1.1rem',
-              borderRight: i < 2 ? '1px solid rgba(255,255,255,0.07)' : 'none',
-              background: 'rgba(255,255,255,0.02)',
+              padding: 'clamp(1.1rem, 2.5vw, 1.6rem) clamp(1rem, 2.5vw, 1.5rem)',
+              borderRight: i < 3 ? `1px solid ${ink(0.06)}` : 'none',
             }}>
-              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.58rem', color: 'rgba(255,255,255,0.2)', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.6rem', color: ink(0.3), letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
                 {m.label}
               </div>
-              <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 400, fontSize: '0.88rem', color: 'rgba(255,255,255,0.7)' }}>
+              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.3rem, 2.6vw, 1.9rem)', color: text, letterSpacing: '0.01em' }}>
                 {m.value}
               </div>
             </div>
           ))}
         </div>
+      </section>
 
-        {/* ── Overview ── */}
-        <div style={{ marginBottom: '2.5rem' }}>
-          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.16em', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', display: 'block', marginBottom: '1rem' }}>
-            Overview
+      {/* ══════════════════════════ THE STACK ══════════════════════════ */}
+      <section className="reveal" style={{
+        padding: 'clamp(3rem, 6vw, 5rem) clamp(1.25rem, 4vw, 3rem)',
+        borderBottom: `1px solid ${ink(0.06)}`,
+      }}>
+        <div style={{ maxWidth: 1180, margin: '0 auto' }}>
+          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.65rem', letterSpacing: '0.2em', color: '#C4FF0E', textTransform: 'uppercase', display: 'block', marginBottom: '0.75rem' }}>
+            ↳ Built With
           </span>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <h2 style={{
+            fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2rem, 4.5vw, 3.4rem)',
+            lineHeight: 0.95, color: text, margin: '0 0 2rem', maxWidth: 640,
+          }}>
+            The technology powering this build.
+          </h2>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+            gap: '0.75rem',
+          }}>
+            {project.tech.map((t, i) => (
+              <div key={t} style={{
+                border: `1px solid ${ink(0.09)}`,
+                borderRadius: 10,
+                padding: '1rem 0.9rem',
+                background: ink(0.02),
+                transition: 'border-color 0.2s, background 0.2s, transform 0.2s',
+              }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(196,255,14,0.5)'; e.currentTarget.style.background = 'rgba(196,255,14,0.05)'; e.currentTarget.style.transform = 'translateY(-3px)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = ink(0.09); e.currentTarget.style.background = ink(0.02); e.currentTarget.style.transform = 'translateY(0)' }}
+              >
+                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.58rem', color: ink(0.2), letterSpacing: '0.1em', marginBottom: '0.4rem' }}>
+                  {String(i + 1).padStart(2, '0')}
+                </div>
+                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '0.88rem', color: text }}>
+                  {t}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════ OVERVIEW ══════════════════════════ */}
+      <section className="reveal" style={{
+        padding: 'clamp(3rem, 6vw, 5rem) clamp(1.25rem, 4vw, 3rem)',
+        borderBottom: `1px solid ${ink(0.06)}`,
+      }}>
+        <div style={{
+          maxWidth: 1180, margin: '0 auto',
+          display: 'grid', gridTemplateColumns: 'minmax(0, 0.85fr) minmax(0, 1.15fr)',
+          gap: 'clamp(2rem, 5vw, 4rem)',
+        }}
+          className="responsive-grid-stack"
+        >
+          <div>
+            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.65rem', letterSpacing: '0.2em', color: '#C4FF0E', textTransform: 'uppercase', display: 'block', marginBottom: '0.75rem' }}>
+              ↳ The Story
+            </span>
+            <h2 style={{
+              fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.9rem, 4vw, 3rem)',
+              lineHeight: 0.98, color: text, margin: 0,
+            }}>
+              What it does, and why it's built this way.
+            </h2>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             {project.overview.map((p, i) => (
-              <p key={i} style={{ fontWeight: 300, fontSize: '0.95rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.85, margin: 0 }}>
+              <p key={i} style={{ fontWeight: 300, fontSize: '1rem', color: ink(0.55), lineHeight: 1.85, margin: 0 }}>
                 {p}
               </p>
             ))}
           </div>
         </div>
+      </section>
 
-        {/* ── Key Features ── */}
-        <div style={{ marginBottom: '2.5rem' }}>
-          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.16em', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', display: 'block', marginBottom: '1rem' }}>
-            Key Features
+      {/* ══════════════════════════ FEATURE SHOWCASE ══════════════════════════ */}
+      <section className="reveal" style={{
+        padding: 'clamp(3rem, 6vw, 5rem) clamp(1.25rem, 4vw, 3rem)',
+        borderBottom: `1px solid ${ink(0.06)}`,
+      }}>
+        <div style={{ maxWidth: 1180, margin: '0 auto' }}>
+          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.65rem', letterSpacing: '0.2em', color: '#C4FF0E', textTransform: 'uppercase', display: 'block', marginBottom: '0.75rem' }}>
+            ↳ Under The Hood
           </span>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <h2 style={{
+            fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(2rem, 4.5vw, 3.4rem)',
+            lineHeight: 0.95, color: text, margin: '0 0 2rem', maxWidth: 640,
+          }}>
+            Capabilities worth showing off.
+          </h2>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '1px',
+            background: ink(0.06),
+            border: `1px solid ${ink(0.06)}`,
+            borderRadius: 14, overflow: 'hidden',
+          }}>
             {project.highlights.map((h, i) => (
               <div key={i} style={{
-                display: 'flex', alignItems: 'center', gap: '0.85rem',
-                padding: '0.8rem 0',
-                borderBottom: i < project.highlights.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                background: cardBg, padding: 'clamp(1.4rem, 2.5vw, 1.9rem)',
               }}>
-                <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#C4FF0E', opacity: 0.7, flexShrink: 0 }} />
-                <span style={{ fontWeight: 300, fontSize: '0.92rem', color: 'rgba(255,255,255,0.6)' }}>{h}</span>
+                <div style={{
+                  fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.6rem',
+                  color: 'rgba(196,255,14,0.65)', lineHeight: 1, marginBottom: '0.75rem',
+                }}>
+                  {String(i + 1).padStart(2, '0')}
+                </div>
+                <p style={{ fontWeight: 300, fontSize: '0.95rem', color: ink(0.65), lineHeight: 1.6, margin: 0 }}>
+                  {h}
+                </p>
               </div>
             ))}
           </div>
         </div>
-
-        {/* ── Tech Stack ── */}
-        <div style={{ marginBottom: '2.5rem' }}>
-          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.16em', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', display: 'block', marginBottom: '0.85rem' }}>
-            Tech Stack
-          </span>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-            {project.tech.map((t) => (
-              <span key={t} className="tag">{t}</span>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Links ── */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap',
-          paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.06)',
-        }}>
-          <button
-            data-hover onClick={onBack}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '0.5rem',
-              background: '#C4FF0E', border: 'none', borderRadius: 100,
-              padding: '9px 20px 9px 16px', color: '#0a0a0a',
-              fontFamily: "'DM Mono', monospace", fontSize: '0.82rem',
-              fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
-              cursor: 'none',
-              boxShadow: '0 0 0 3px rgba(196,255,14,0.2), 0 4px 18px rgba(196,255,14,0.22)',
-              transition: 'background 0.18s, box-shadow 0.18s, transform 0.18s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#d4ff3e'; e.currentTarget.style.boxShadow = '0 0 0 5px rgba(196,255,14,0.3), 0 6px 24px rgba(196,255,14,0.38)'; e.currentTarget.style.transform = 'translateX(-2px)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = '#C4FF0E'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(196,255,14,0.2), 0 4px 18px rgba(196,255,14,0.22)'; e.currentTarget.style.transform = 'translateX(0)' }}
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 5l-7 7 7 7" />
-            </svg>
-            Back
-          </button>
-
-          {project.links?.github && (
-            <a data-hover href={project.links.github} target="_blank" rel="noopener noreferrer"
-              className="btn btn-ghost" style={{ fontSize: '0.82rem', padding: '9px 20px' }}>
-              View on GitHub ↗
-            </a>
-          )}
-          {project.links?.live && (
-            <a data-hover href={project.links.live} target="_blank" rel="noopener noreferrer"
-              className="btn btn-fill" style={{ fontSize: '0.82rem', padding: '9px 20px' }}>
-              Live Demo ↗
-            </a>
-          )}
-          {project.links?.apk && (
-            <a data-hover href={project.links.apk} target="_blank" rel="noopener noreferrer" download
-              className="btn btn-ghost" style={{ fontSize: '0.82rem', padding: '9px 20px', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" />
-              </svg>
-              Download APK
-            </a>
-          )}
-        </div>
-      </div>
+      </section>
 
       {/* ── Lightbox ── */}
       {imgExpanded && hasImages && (
@@ -979,8 +1125,28 @@ export default function App() {
   // ── Project state ─────────────────────────────────────────────────────────────
   // navState: 'portfolio' | 'project'
   // transitionActive: controls whether the wipe circle is mounted (independent of navState)
-  const [navState, setNavState]           = useState('portfolio')
-  const [activeProject, setActiveProject] = useState(null)
+  // Persisted to sessionStorage so a refresh while viewing a project reopens
+  // that same project instead of dropping back to the hero section.
+  const getStoredProject = () => {
+    try {
+      const savedNumber = sessionStorage.getItem('portfolio:activeProjectNumber')
+      if (!savedNumber) return null
+      return projectsList.find(p => p.number === savedNumber) || null
+    } catch {
+      return null
+    }
+  }
+
+  const [activeProject, setActiveProject] = useState(getStoredProject)
+  const [navState, setNavState] = useState(() => {
+    try {
+      return sessionStorage.getItem('portfolio:navState') === 'project' && getStoredProject()
+        ? 'project'
+        : 'portfolio'
+    } catch {
+      return 'portfolio'
+    }
+  })
   const [transitionActive, setTransitionActive] = useState(false)
 
   // Refs so the transition screen always calls the latest callbacks
@@ -1063,6 +1229,10 @@ export default function App() {
   // ── Open project ──────────────────────────────────────────────────────────────
   const handleOpenProject = useCallback((project) => {
     setActiveProject(project)
+    try {
+      sessionStorage.setItem('portfolio:navState', 'project')
+      sessionStorage.setItem('portfolio:activeProjectNumber', project.number)
+    } catch {}
     // Peak: switch to project view while circle fully covers screen
     onPeakRef.current = () => setNavState('project')
     // Done: just unmount the transition circle
@@ -1076,6 +1246,10 @@ const handleBack = useCallback(() => {
     setNavState('portfolio')
     setActiveProject(null)  // ← clear HERE at peak, not in onDone
                             //   so project page hides while circle still covers screen
+    try {
+      sessionStorage.removeItem('portfolio:navState')
+      sessionStorage.removeItem('portfolio:activeProjectNumber')
+    } catch {}
   }
   onDoneRef.current = () => {
     setTransitionActive(false)

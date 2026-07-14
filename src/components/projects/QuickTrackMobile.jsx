@@ -1,6 +1,6 @@
-import quicktrack from '../../../public/project/quicktrack/quicktrack.jpg'
-import quicktrack2 from '../../../public/project/quicktrack/quicktrack2.jpg'
-import quicktrack3 from '../../../public/project/quicktrack/quicktrack3.jpg'
+import quicktrack from '../../../public/project/quicktrack/quicktrack.png'
+import quicktrack2 from '../../../public/project/quicktrack/quicktrack2.png'
+import quicktrack3 from '../../../public/project/quicktrack/quicktrack3.png'
 
 const QuickTrackMobile = {
   number: '004',

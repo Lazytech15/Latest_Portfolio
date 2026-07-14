@@ -442,3 +442,9 @@ button[aria-label="Back to top"] {
 /* ─── Scroll-retrigger: reset reveal on scroll-out ─── */
 /* The JS observer removes .visible on exit, CSS transition handles re-entry */
 /* No extra CSS needed — existing .reveal / .reveal.visible handles it */
+/* Project landing page — responsive stack for overview section */
+@media (max-width: 720px) {
+  .responsive-grid-stack {
+    grid-template-columns: 1fr !important;
+  }
+}
