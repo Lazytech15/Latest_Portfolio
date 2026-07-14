@@ -660,6 +660,15 @@ return (
               Live Demo ↗
             </a>
           )}
+          {project.links?.apk && (
+            <a data-hover href={project.links.apk} target="_blank" rel="noopener noreferrer" download
+              className="btn btn-ghost" style={{ fontSize: '0.82rem', padding: '9px 20px', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" />
+              </svg>
+              Download APK
+            </a>
+          )}
         </div>
       </div>
 

@@ -7,6 +7,7 @@ import EatAllPOS from './projects/EatAllPOS'
 import QuickTrackMobile from './projects/QuickTrackMobile'
 import ERJSmartSolution from './projects/ERJSmartSolution'
 import VueSurLaMontagne from './projects/VueSurLaMontagne'
+import LetsPlaySong from './projects/LetsPlaySong'
 
 import vuesurlamontagne from '../../public/project/hotel/vuesurlamontagne.png'
 import inventorycontrol from '../../public/project/inventorycontrol/inventorycontrol.png'
@@ -14,6 +15,7 @@ import quicktrack from '../../public/project/quicktrack/quicktrack.jpg'
 import nfcScanner from '../../public/project/nfcscanner.jpg'
 import eatall from '../../public/project/eatallpos/eatall2.png'
 import erjsmartsolution from '../../public/project/smartsolutions/erjsmartsolution.png'
+import letsplaysong from '../../public/project/letsplaysong/letsplaysong.jpg'
 
 const projectImages = [
   nfcScanner,
@@ -22,6 +24,7 @@ const projectImages = [
   quicktrack,
   erjsmartsolution,
   vuesurlamontagne,
+  letsplaysong,
 ]
 
 const projects = [
@@ -31,6 +34,7 @@ const projects = [
   QuickTrackMobile,
   ERJSmartSolution,
   VueSurLaMontagne,
+  LetsPlaySong,
 ]
 
 // PeekImage: positioned via direct DOM ref to avoid setState on every mousemove
