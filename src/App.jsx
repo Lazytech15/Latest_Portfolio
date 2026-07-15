@@ -5,6 +5,7 @@ import Skills from './components/Skills'
 import Projects, { projectsList } from './components/Projects'
 import Resume from './components/Resume'
 import Contact from './components/Contact'
+import BackToTop from './components/BackToTop'
 import { useDarkMode } from './DarkModeContext'
 
 // ─── Loading Screen ────────────────────────────────────────────────────────────
@@ -673,9 +674,10 @@ function ProjectPage({ project, onBack }) {
 
       {/* ══════════════════════════ STAT STRIP ══════════════════════════ */}
       <section className="reveal" style={{ borderBottom: `1px solid ${ink(0.06)}`, background: ink(0.015) }}>
-        <div style={{
+        <div className="stat-strip-grid" style={{
           maxWidth: 1180, margin: '0 auto',
-          display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
+          display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+          '--stat-divider': ink(0.06),
         }}>
           {[
             { label: 'Role',        value: project.role },
@@ -683,14 +685,15 @@ function ProjectPage({ project, onBack }) {
             { label: 'Stack Depth', value: `${project.tech.length} tools` },
             { label: 'Status',      value: project.status },
           ].map((m, i) => (
-            <div key={i} style={{
+            <div key={i} className="stat-strip-item" style={{
               padding: 'clamp(1.1rem, 2.5vw, 1.6rem) clamp(1rem, 2.5vw, 1.5rem)',
               borderRight: i < 3 ? `1px solid ${ink(0.06)}` : 'none',
+              minWidth: 0,
             }}>
               <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.6rem', color: ink(0.3), letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
                 {m.label}
               </div>
-              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.3rem, 2.6vw, 1.9rem)', color: text, letterSpacing: '0.01em' }}>
+              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.3rem, 2.6vw, 1.9rem)', color: text, letterSpacing: '0.01em', overflowWrap: 'anywhere' }}>
                 {m.value}
               </div>
             </div>
@@ -920,9 +923,8 @@ const SECTIONS_BASE = [
 ]
 
 // ─── Vertical Right Nav ────────────────────────────────────────────────────────
-function VerticalNav({ activeIndex, onNavigate, scrolled, showBackToTop, sections }) {
+function VerticalNav({ activeIndex, onNavigate, scrolled, sections }) {
   const [hoveredIndex, setHoveredIndex] = useState(null)
-  const [hovered, setHovered] = useState(false)
 
   return (
     <div style={{
@@ -974,34 +976,6 @@ function VerticalNav({ activeIndex, onNavigate, scrolled, showBackToTop, section
           </button>
         )
       })}
-      <div style={{
-        marginTop: '10px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.08)',
-        display: 'flex', justifyContent: 'flex-end',
-        opacity: showBackToTop ? 1 : 0,
-        transform: showBackToTop ? 'translateY(0) scale(1)' : 'translateY(8px) scale(0.85)',
-        transition: 'opacity 0.35s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1)',
-        pointerEvents: showBackToTop ? 'auto' : 'none',
-      }}>
-        <button
-          data-hover onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
-          aria-label="Back to top"
-          style={{
-            width: 36, height: 36, borderRadius: '50%',
-            border: `1.5px solid ${hovered ? '#00E5A0' : 'rgba(255,255,255,0.18)'}`,
-            background: hovered ? '#00E5A0' : 'rgba(10,10,10,0.75)', backdropFilter: 'blur(12px)',
-            color: hovered ? '#0a0a0a' : 'rgba(255,255,255,0.65)', cursor: 'none',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'border-color 0.2s, background 0.2s, color 0.2s',
-            boxShadow: hovered ? '0 0 16px rgba(0,229,160,0.35)' : '0 2px 16px rgba(0,0,0,0.4)',
-          }}
-        >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-            style={{ transform: hovered ? 'translateY(-1px)' : 'none', transition: 'transform 0.2s ease' }}>
-            <path d="M12 19V5M5 12l7-7 7 7" />
-          </svg>
-        </button>
-      </div>
     </div>
   )
 }
@@ -1112,12 +1086,12 @@ export default function App() {
   const runwayRefs = useRef([])
   const cardOffsets = useRef([])
   const scrollUpCurrent = useRef([])  // lerped scrollUpY values per card
+  const projectScrollRef = useRef(null)  // scroll container for the project detail overlay
 
   const { isDark } = useDarkMode()
 
   const [loadingDone, setLoadingDone] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
-  const [showBackToTop, setShowBackToTop] = useState(false)
   const [navVisible, setNavVisible] = useState(false)
   const navIdleTimer = useRef(null)
   const [isTouchDevice, setIsTouchDevice] = useState(false)
@@ -1399,8 +1373,6 @@ const handleBack = useCallback(() => {
     // Scroll-driven React state updates — in a scroll listener, NOT the RAF loop.
     // Calling setState 60x/sec inside RAF causes re-renders every frame = the jiggle.
     const onScrollState = () => {
-      const scrollY = window.scrollY
-      setShowBackToTop(scrollY > 300)
       setNavVisible(true)
       clearTimeout(navIdleTimer.current)
       navIdleTimer.current = setTimeout(() => setNavVisible(false), 2500)
@@ -1542,10 +1514,19 @@ const handleBack = useCallback(() => {
 
       {/* ── Project full page ── */}
       {isShowingProject && activeProject && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9000, overflowY: 'auto', background: '#0d0d0d' }}>
+        <div ref={projectScrollRef} style={{ position: 'fixed', inset: 0, zIndex: 9000, overflowY: 'auto', overflowX: 'hidden', background: '#0d0d0d' }}>
           <ProjectPage project={activeProject} onBack={handleBack} />
         </div>
       )}
+
+      {/* ── Universal back-to-top ── shows on any long, scrollable view: the
+          main portfolio page or the project detail overlay (which scrolls
+          its own container, not the window), and floats bottom-right. */}
+      <BackToTop
+        key={isShowingProject ? 'project' : 'portfolio'}
+        scrollContainerRef={isShowingProject ? projectScrollRef : null}
+        bottomOffset={isTouchDevice && !isShowingProject ? 'calc(56px + env(safe-area-inset-bottom) + 16px)' : undefined}
+      />
 
       {/* ── Portfolio ── */}
       <div style={{ visibility: isShowingProject ? 'hidden' : 'visible' }}>
@@ -1554,7 +1535,6 @@ const handleBack = useCallback(() => {
             activeIndex={activeIndex}
             onNavigate={navigateToSection}
             scrolled={navVisible}
-            showBackToTop={showBackToTop}
             sections={SECTIONS}
           />
         </div>
