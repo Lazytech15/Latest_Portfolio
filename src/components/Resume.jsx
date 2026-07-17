@@ -130,7 +130,7 @@ export default function Resume() {
 
             <div className="reveal reveal-d4" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 'clamp(2rem, 5vw, 3rem)' }}>
               <a href="/resume/Emmanuel_Ablao_ATS_Resume.pdf" download style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: acc, color: '#0d0d0d', fontFamily: "'DM Mono', monospace", fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', padding: '14px 28px', textDecoration: 'none' }}>Download PDF</a>
-              <a href="/resume/Emmanuel_Ablao_ATS_Resume.docx" download style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', color: muted, fontFamily: "'DM Mono', monospace", fontSize: '0.75rem', letterSpacing: '0.14em', textTransform: 'uppercase', textDecoration: 'none', border: `0.5px solid ${borderStrong}`, padding: '14px 28px' }}>Download DOCX</a>
+              {/* <a href="/resume/Emmanuel_Ablao_ATS_Resume.docx" download style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', color: muted, fontFamily: "'DM Mono', monospace", fontSize: '0.75rem', letterSpacing: '0.14em', textTransform: 'uppercase', textDecoration: 'none', border: `0.5px solid ${borderStrong}`, padding: '14px 28px' }}>Download DOCX</a> */}
             </div>
 
             <div className="reveal reveal-d4">
